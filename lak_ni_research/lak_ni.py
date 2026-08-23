@@ -49,7 +49,21 @@ WEEKDAYS = [
 YEAR_ANCHOR_AD = 1193
 YEAR_ANCHOR_NAME = "Mungkeu"
 
-TAI_CYCLE_ANCHOR_AD = 1984
+AHOM_STEMS = [
+    ("Kap", "jia 甲", "wood"), ("Dap", "yi 乙", "wood"),
+    ("Rai", "bing 丙", "fire"), ("Mueang", "ding 丁", "fire"),
+    ("Plaek", "wu 戊", "earth"), ("Kat", "ji 己", "earth"),
+    ("Khut", "geng 庚", "metal"), ("Rung", "xin 辛", "metal"),
+    ("Tao", "ren 壬", "water"), ("Ka", "gui 癸", "water"),
+]
+
+SHAN_STEMS = ["Kra/Kap", "Lup/Lap", "Hut/Hai", "Muang/Möng", "Puek/Pök",
+              "Kut/Kud", "Koat/Khot", "Hong/Hung", "Tao/Thao", "Ka"]
+
+YEAR_BOUNDS = {"jan1": (1, 1), "lichun": (2, 4), "songkran": (4, 14)}
+DEFAULT_BOUNDARY = "songkran"
+
+EPOCH_STEM_BRANCH = 4
 
 DAY_ANCHOR_JDN = 2433191
 
@@ -88,13 +102,23 @@ def lak_ni_year(ad_year: int) -> dict:
 
 
 def tai_structural_year(ad_year: int) -> dict:
-    mi = (ad_year - TAI_CYCLE_ANCHOR_AD) % 10
-    si = (ad_year - TAI_CYCLE_ANCHOR_AD) % 12
+    si = (ad_year - EPOCH_STEM_BRANCH) % 10
+    zi = (ad_year - EPOCH_STEM_BRANCH) % 12
+    stem_name, stem_cn, element = AHOM_STEMS[si]
     return {
-        "mother": MOTHERS_TAI[mi],
-        "son": SONS_TAI[si],
-        "name": f"{MOTHERS_TAI[mi].split()[0]}-{SONS_TAI[si].split('/')[0].split()[0]}",
+        "stem": stem_name,
+        "stem_chinese": stem_cn,
+        "element": element,
+        "shan_stem": SHAN_STEMS[si],
+        "son": SONS_TAI[zi],
+        "name": f"{stem_name}-{SONS_TAI[zi].split('/')[0].split()[0]}",
+        "cycle_index": (ad_year - EPOCH_STEM_BRANCH) % 60,
     }
+
+
+def tai_year_for(y: int, m: int, d: int, rule: str = DEFAULT_BOUNDARY) -> int:
+    b = YEAR_BOUNDS[rule]
+    return y - 1 if (m, d) < b else y
 
 
 def sakkaraj(ad_year: int) -> int:
@@ -171,19 +195,27 @@ def lunar_phase(jdn: int, tz_hours: float = DEFAULT_TZ_HOURS) -> dict:
     return {"phase": phase, "day": num, "new_moon_jdn": nm_day}
 
 
-def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS) -> str:
+def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS,
+                rule: str = DEFAULT_BOUNDARY) -> str:
     jdn = to_jdn(y, m, d)
     dt = datetime.date(y, m, d)
-    yr = lak_ni_year(y)
-    ty = tai_structural_year(y)
+    ty = tai_year_for(y, m, d, rule)
+    yr = lak_ni_year(ty)
+    st = tai_structural_year(ty)
     dy = day_sexagenary(jdn)
     ld = lunar_phase(jdn, tz_hours)
     phase_txt = ld["phase"] if ld["day"] is None else f"{ld['phase']} day {ld['day']}"
+    cs = sakkaraj(ty)
+    sok_digit = cs % 10
+    sok_names = ["samritthisok", "ekasok", "thosok", "trisok", "chattawasok",
+                 "benchasok", "chosok", "sappasok", "atthasok", "noppasok"]
     lines = [
         f"Gregorian date : {dt.isoformat()} ({WEEKDAYS[(dt.weekday() + 1) % 7]})",
-        f"Lak-Ni year    : {yr['position']}/60 \"{yr['me_pi_popular']}\" (cycle {yr['cycle_number']} since {YEAR_ANCHOR_AD} {YEAR_ANCHOR_NAME})",
-        f"Tai year name  : {ty['name']}  [{ty['mother']} x {ty['son']}]",
-        f"Sakkaraj era   : {sakkaraj(y)} CS",
+        f"Tai year       : {ty} (turns {rule}; Jan-Aug dates may use y-1)",
+        f"Lak-Ni year    : {yr['position']}/60 \"{yr['me_pi_popular']}\" (folk Me-Pi count, anchored 1193 CE)",
+        f"Year name      : {st['name']} = {st['element']} {st['son'].split('(')[1][:-1]}  [{st['stem']} ({st['stem_chinese']}) x {st['son']}]",
+        f"Shan variant   : {st['shan_stem']}-{st['son'].split('/')[0].split()[0]}",
+        f"Sakkaraj era   : {cs} CS (sok {sok_digit} = {sok_names[sok_digit]})",
         f"Day name       : {dy['name']}  ({dy['index']}/60) [{dy['mother']} x {dy['son']}]",
         f"Lunar phase    : {phase_txt}  [UTC+{tz_hours:g}, Myanmar-style]",
         f"Julian Day No. : {jdn}",
@@ -199,9 +231,18 @@ def self_test() -> None:
     assert lak_ni_year(1268)["me_pi_popular"] == "Taoni"
     assert lak_ni_year(1268)["position"] == 16
     assert lak_ni_year(1253)["me_pi_popular"] == "Mungkeu"
+    assert tai_structural_year(1984)["stem"] == "Kap"
     assert tai_structural_year(1984)["son"] == SONS_TAI[0]
-    assert tai_structural_year(1984)["mother"] == MOTHERS_TAI[0]
-    assert tai_structural_year(2026)["son"].startswith("Singa")
+    st26 = tai_structural_year(2026)
+    assert st26["stem"] == "Rai" and st26["element"] == "fire"
+    assert st26["son"].startswith("Singa") and st26["cycle_index"] == 42
+    assert tai_structural_year(2025)["stem"] == "Dap"
+    assert tai_structural_year(2025)["son"].startswith("Sai")
+    assert tai_year_for(2026, 1, 1) == 2025
+    assert tai_year_for(2026, 4, 13) == 2025
+    assert tai_year_for(2026, 4, 14) == 2026
+    assert tai_year_for(2026, 2, 3, "lichun") == 2025
+    assert tai_year_for(2026, 12, 31, "jan1") == 2026
     assert sakkaraj(2026) == 1388
     assert to_jdn(2000, 1, 1) == 2451545
     assert WEEKDAYS[(datetime.date(2026, 8, 23).weekday() + 1) % 7].startswith("Sun")
@@ -225,6 +266,8 @@ def main(argv=None) -> int:
     p.add_argument("--test", action="store_true", help="run self-tests")
     p.add_argument("--tz", type=float, default=DEFAULT_TZ_HOURS,
                    help="timezone offset hours for lunar phase (default 6.5 Myanmar; 5.5 Assam)")
+    p.add_argument("--boundary", choices=sorted(YEAR_BOUNDS), default=DEFAULT_BOUNDARY,
+                   help="year-turn rule: songkran (Apr 14, Tai/Ahom), lichun (Feb 4, Chinese), jan1")
     p.add_argument("--calibrate", nargs=2, metavar=("DATE", "ANIMAL"),
                    help="print candidate DAY_ANCHOR_JDN for a known day-animal")
     args = p.parse_args(argv)
@@ -251,7 +294,7 @@ def main(argv=None) -> int:
     except (ValueError, IndexError):
         p.error("date must be given as YYYY MM DD")
 
-    print(full_report(y, m, d, args.tz))
+    print(full_report(y, m, d, args.tz, args.boundary))
     return 0
 
 
