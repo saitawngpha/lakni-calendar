@@ -455,6 +455,13 @@ Honest limitations you should know before citing this code:
 **Historical/astronomical background**
 
 7. Burgess (trans.), *Sūrya-Siddhānta* — 1,577,917,828 days : 4,320,000 years.
+   **Chapter I, verses 34–37** define the canonical revolutions, the terrestrial days,
+   and the sunrise-to-sunrise definition of the civil day:
+   https://en.wikisource.org/wiki/Page:English_translation_of_the_Surya_Siddhanta_and_the_Siddhanta_Siromani_by_Sastri,_1861.djvu/16
+   Thus, 1,350 and 193 do not come from sunrise time directly. They form a
+   correction mechanism that makes the abbreviated `292,207/800` value agree more
+   closely with the full Sūrya Siddhānta figure. The underlying civil days are
+   nevertheless defined as sunrise-to-sunrise.
 8. Sewell & Dikshit, *The Indian Calendar*; Irwin, *The Burmese and Arakanese Calendars*
    — canonical constants adopted by SE Asian calendars.
 9. Lars Gislén, "Burmese Eclipse Calculations", JAHH 18(1) 2015 — the 292207/800 notation.
