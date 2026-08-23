@@ -12,6 +12,12 @@ reference data:
 |---|---|---|
 | `lak_ni.py` | Tai Ahom *Lak Ni* (Assam) | Modular arithmetic on Julian Day Numbers |
 | `lak_jeng.py` | Shan *Lak Jeng* (Myanmar/Yunnan) | Sūrya Siddhānta integer day-count (*ahargaṇa*) |
+| `sakkaraj.py` | Chula Sakarat / Thet Kayit era machinery | Myanmar watat rules + Thai avoman integers |
+
+Companion research notes: **`SAKKARAJ.md`** — deep dive into the Sakkaraj era family
+(Anjana 691 BCE → Buddha 544 BCE → Śaka/Mahā 78 CE → **Cula Sakarat 22 March 638 CE**),
+the Makaranta→Thandeikta→Advisory-Board calculation eras, watat intercalation logic,
+regional month-numbering hazards, and the Thai/Burmese leap-day placement difference.
 
 No third-party dependencies — Python 3 standard library only.
 
@@ -85,7 +91,32 @@ All of the following are the *same position* in the cycle:
 > *each element appears twice per decade*, once "male" and once "female".
 > This is the **Tai** distribution. The Chinese stem-element pairing is laid out
 > differently (wood, wood, fire, fire, ...), so a Tai element does **not** map
-> 1-to-1 onto a Chinese stem at the same index — but the animal always matches.
+> 1-to-1 onto a Chinese stem at the same index — but the animal always agrees.
+
+### Two competing stem-name tables (important!)
+
+Comparative research across Vietnam/Laos/Thailand/India reveals **two attested
+name-sets** for the same ten positions:
+
+| # | Shan/Lanna set (`lak_jeng.py`, verified) | Ahom/Buranji set (`lak_ni.py` default) | Chinese stem |
+|---|---|---|---|
+| 0 | Kra/Kap | Kap | 甲 jiǎ (wood yang) |
+| 1 | Lup/Lap | Dap | 乙 yǐ (wood yin) |
+| 2 | Hut/Hai | Rai | 丙 bǐng (fire yang) |
+| 3 | Muang/Möng | Mueang | 丁 dīng (fire yin) |
+| 4 | Puek/Pök | Plaek | 戊 wù (earth yang) |
+| 5 | Kut/Kud | Kat | 己 jǐ (earth yin) |
+| 6 | Koat/Khot | Khut | 庚 gēng (metal yang) |
+| 7 | Hong/Hung | Rung | 辛 xīn (metal yin) |
+| 8 | Tao/Thao | Tao | 壬 rén (water yang) |
+| 9 | Ka | Ka | 癸 guǐ (water yin) |
+
+The Ahom set maps **element-for-element onto the Chinese stems**; the Shan set carries
+the indigenous five-element×2 doctrine instead. Positions 0, 3, 5, 8, 9 are near-identical
+in both sets (Kap≈Kra, Mueang≈Muang, Kat≈Kut, Tao, Ka) — likely dialect drift of one
+ancient word-list. `lak_ni.py` reports the Ahom naming as primary (Buranji evidence:
+"Lakni Rung-rao" = 辛酉 metal-rooster; the popular year lists cycle through *dap, rai,
+khut, rung*), with the Shan variant shown alongside.
 
 ---
 
@@ -108,9 +139,11 @@ Sample output (`lak_ni.py 2026 08 23`):
 
 ```
 Gregorian date : 2026-08-23 (Sun)
-Lak-Ni year    : 54/60 "Khutchi" (cycle 14 since 1193 Mungkeu)
-Tai year name  : Hut-Singa  [Hut x Singa/Nga (horse)]
-Sakkaraj era   : 1388 CS
+Tai year       : 2026 (turns songkran)
+Lak-Ni year    : 54/60 "Khutchi" (folk Me-Pi count, anchored 1193 CE)
+Year name      : Rai-Singa = fire horse  [Rai (bing 丙) x Singa/Nga (horse)]
+Shan variant   : Hut/Hai-Singa
+Sakkaraj era   : 1388 CS (sok 8 = atthasok)
 Day name       : Kut-Sai  (5/60) [Kut x Sai (snake)]
 Lunar phase    : waxing day 10  [UTC+6.5, Myanmar-style]
 Julian Day No. : 2461276
@@ -132,7 +165,7 @@ Sukaphaa, founder of the Ahom kingdom. This anchor is verifiable from published 
 | Kingdom founded (Charaideo) | 1253 | 61 ≡ 1 | Mungkeu again ✓ |
 | Sukaphaa dies | 1268 | 16 | Taoni |
 
-### Step 2 — compute the position
+### Step 2 — position in the cycle
 
 ```
 n = ((AD_year − 1193) mod 60) + 1        # 1-based position in the 60-year Me-Pi cycle
@@ -140,20 +173,42 @@ name = ME_PI_60[n]                       # e.g. n=54 → "Khutchi"
 ```
 
 Worked: 2026 → (2026−1193) = 833 → 833 mod 60 = 53 → n = 54 → **Khutchi**, cycle 14.
+⚠️ This folk numbering is anchored to Ahom history (Sukaphaa). It is a *separate*
+counting tradition from the pan-Tai China-aligned names below — do not mix them.
 
 ### Step 3 — structural decomposition (pan-Tai alignment)
 
-Independently, the Mother and Child can be computed from the pan-Tai anchor
-1984 CE = Kra-Jai (wood-rat, same animal as Chinese 甲子 year 1984):
+The pan-Tai name pair uses the classic ganzhi epoch: **4 CE = kap-chai (甲子)**,
+so `(Y − 4)` replaces the Chinese `(Y − 4)` identically (our earlier constant
+1984 ≡ 4 mod 10/12/60 gives identical indices):
 
 ```
-mother_index = (AD_year − 1984) mod 10     # into MOTHERS[0..9]
-animal_index = (AD_year − 1984) mod 12     # into ANIMALS[0..11]
+stem_index   = (AD_year − 4) mod 10      # 2026 → 2 → Rai (丙 fire)
+animal_index = (AD_year − 4) mod 12      # 2026 → 6 → Singa/Nga (horse)
+cycle_index  = (AD_year − 4) mod 60      # 2026 → 42 (43rd term, bǐngwǔ 丙午)
 ```
 
-2026 → mother 2 = Hut(earth), animal 6 = horse → **Hut-Singa**.
-(Chinese 2026 is *fire*-horse 丙午 — elements differ because Tai elements are
-distributed differently, see §2. Animals always agree.)
+→ **2026 = Rai-Singa, the Fire-Horse year** (Chinese Bǐng-wǔ ✓).
+2025 = Dap-Sai / 乙巳 = Wood Snake (a circulating comparative table mislabels it
+"Water Snake"; 乙 is wood-yin).
+
+**Year-turn rule (critical for dates!):** the Tai/Ahom year turns around
+**mid-April** (Bohag Bihu / Sangken / Songkran season), not January 1 — so
+Jan 1–Apr 13, 2026 still belongs to the *Wood-Snake* year. Chinese-style usage
+turns at Lìchūn (~Feb 4). `lak_ni.py --boundary {songkran,lichun,jan1}`
+(default songkran, Apr 14) applies this before all year arithmetic.
+
+### Step 3b — the Thai *sok* offset trap
+
+Central Thailand officially replaces the stem wheel with the ***sok***: the last
+digit of the Chula Sakarat year, `CS = Y − 638`. It sits a fixed −4 from the
+kap–ka index: `sok = (Y − 638) mod 10`. 2026 → CS 1388 → digit 8 → *atthasok* →
+"Year of the Horse, atthasok". Same engine, different decade-name wheel — the #1
+source of "my stem doesn't match" confusion when comparing almanacs.
+
+**Animal substitutions by culture:** Ox→water-buffalo (Vietnam), Rabbit→cat
+(Vietnam), Dragon→Naga/Nak (Lao/Thai), Pig→elephant (parts of Lanna); Khmer
+communities often run one animal ahead of Lao reckoning (+1 offset).
 
 ### Step 4 — auxiliary eras
 
@@ -406,9 +461,20 @@ Honest limitations you should know before citing this code:
 **Historical/astronomical background**
 
 7. Burgess (trans.), *Sūrya-Siddhānta* — 1,577,917,828 days : 4,320,000 years.
+   **Chapter I, verses 34–37** define the canonical revolutions, the terrestrial days,
+   and the sunrise-to-sunrise definition of the civil day:
+   https://en.wikisource.org/wiki/Page:English_translation_of_the_Surya_Siddhanta_and_the_Siddhanta_Siromani_by_Sastri,_1861.djvu/16
+   Thus, 1,350 and 193 do not come from sunrise time directly. They form a
+   correction mechanism that makes the abbreviated `292,207/800` value agree more
+   closely with the full Sūrya Siddhānta figure. The underlying civil days are
+   nevertheless defined as sunrise-to-sunrise.
 8. Sewell & Dikshit, *The Indian Calendar*; Irwin, *The Burmese and Arakanese Calendars*
    — canonical constants adopted by SE Asian calendars.
 9. Lars Gislén, "Burmese Eclipse Calculations", JAHH 18(1) 2015 — the 292207/800 notation.
+10. *Sexagenary Cycle — Tai comparative research* (Vietnam/Laos/Thailand/India/China,
+    user-supplied document, Aug 2026) — Ahom stem table kap…ka mapped to 甲乙丙丁…,
+    epoch 4 CE = kap-chai, Thai *sok* offset, animal-substitution survey, April
+    year-turn rule. Basis for §2's dual stem tables and §4 Step 3.
 
 ---
 

@@ -12,6 +12,12 @@ reference data:
 |---|---|---|
 | `lak_ni.py` | Tai Ahom *Lak Ni* (Assam) | Modular arithmetic on Julian Day Numbers |
 | `lak_jeng.py` | Shan *Lak Jeng* (Myanmar/Yunnan) | Sūrya Siddhānta integer day-count (*ahargaṇa*) |
+| `sakkaraj.py` | Chula Sakarat / Thet Kayit era machinery | Myanmar watat rules + Thai avoman integers |
+
+Companion research notes: **`SAKKARAJ.md`** — deep dive into the Sakkaraj era family
+(Anjana 691 BCE → Buddha 544 BCE → Śaka/Mahā 78 CE → **Cula Sakarat 22 March 638 CE**),
+the Makaranta→Thandeikta→Advisory-Board calculation eras, watat intercalation logic,
+regional month-numbering hazards, and the Thai/Burmese leap-day placement difference.
 
 No third-party dependencies — Python 3 standard library only.
 
@@ -455,6 +461,13 @@ Honest limitations you should know before citing this code:
 **Historical/astronomical background**
 
 7. Burgess (trans.), *Sūrya-Siddhānta* — 1,577,917,828 days : 4,320,000 years.
+   **Chapter I, verses 34–37** define the canonical revolutions, the terrestrial days,
+   and the sunrise-to-sunrise definition of the civil day:
+   https://en.wikisource.org/wiki/Page:English_translation_of_the_Surya_Siddhanta_and_the_Siddhanta_Siromani_by_Sastri,_1861.djvu/16
+   Thus, 1,350 and 193 do not come from sunrise time directly. They form a
+   correction mechanism that makes the abbreviated `292,207/800` value agree more
+   closely with the full Sūrya Siddhānta figure. The underlying civil days are
+   nevertheless defined as sunrise-to-sunrise.
 8. Sewell & Dikshit, *The Indian Calendar*; Irwin, *The Burmese and Arakanese Calendars*
    — canonical constants adopted by SE Asian calendars.
 9. Lars Gislén, "Burmese Eclipse Calculations", JAHH 18(1) 2015 — the 292207/800 notation.
