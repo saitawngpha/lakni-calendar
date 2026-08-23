@@ -1,4 +1,5 @@
 # Lak Ni & Lak Jeng — Tai Calendar Algorithms in Python
+- 🇬🇧 [English](README.md) | - 🟨🟩🟥 [Shan / Tai](README_SHN.md) | - 🇲🇲 [မြန်မာ](README_MY.md) | - 🇹🇭 [ภาษาไทย](README_TH.md)
 
 A hands-on research toolkit for the **sexagenary ("60-name") calendar** used by the Tai
 peoples — including the **Tai Ahom** of Assam, India (who call it *Lak Ni* / *Lakni*) and
