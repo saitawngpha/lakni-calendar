@@ -1,4 +1,15 @@
+🇬🇧 [English](README.md) | 🟨🟩🟥 [Shan / Tai](README_SHN.md) | 🇲🇲 [မြန်မာ](README_MY.md)| 🇹🇭 [ภาษาไทย](README_TH.md)
+
 # Lakni and Lak Jeng: comparative Tai calendar algorithms
+
+<p align="center">
+  <img
+    src="src/poster_lakni_lakjeng.png"
+    alt="Lak Ni and Lak Jeng Calendar Research"
+    width="100%"
+    height="450"
+  />
+</p>
 
 This repository is an educational, source-led toolkit for Tai communities studying
 sexagenary year and day cycles. It keeps related traditions comparable without treating
