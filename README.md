@@ -173,10 +173,14 @@ difference.
    https://prints.iiap.res.in/handle/2248/7856
 2. Yan Naing Aye, "Algorithm, Program and Calculation of Myanmar Calendar," and the
    MIT-licensed `mmcal` reference implementation. https://github.com/yan9a/mmcal
-3. B. J. Terwiel and Ranoo Wichasin, *Tai Ahoms and the Stars*, Cornell SEAP, 1992.
-4. Sua Tai Mong, "Method for Calculating the Lak Jeng Cycle," 2021.
-5. Jean Meeus, *Astronomical Algorithms*, 2nd ed., chapter 49.
-6. Burgess (trans.), *Surya Siddhanta*, chapter I.
+3. B. J. Terwiel and Ranoo Wichasin, [*Tai Ahoms and the Stars*](https://www.cornellpress.cornell.edu/book/9780877277095/tai-ahoms-and-the-stars/),
+   Cornell Southeast Asia Program, 1992, ISBN 978-0-87727-709-5.
+4. Sua Tai Mong, ["Method for Calculating the Lak Jeng Cycle"](https://www.facebook.com/share/1DqdDNsA1o/?mibextid=wwXIfr),
+   21 November 2021. This community-source link may require a Facebook login.
+5. Jean Meeus, [*Astronomical Algorithms*](https://1535.sydneyplus.com/genieplus/final/ViewRecord.aspx?record=9ff397d1-1fba-479f-85ab-8a51de0ca72c&template=Books),
+   2nd ed., Willmann-Bell, 1998, chapter 49, ISBN 0-943396-61-1.
+6. Ebenezer Burgess (trans.), [*Translation of the Surya-Siddhanta*](https://commons.wikimedia.org/wiki/File%3ATRANSLATION_OF_THE_SURYA-SIDDHANTA_%28IA_dli.bengal.10689.17955%29.pdf),
+   American Oriental Society, 1860, chapter I (public-domain scan).
 
 ## Research status
 
