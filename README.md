@@ -1,9 +1,4 @@
-## 🌐 Languages
-
-- 🇬🇧 [English](README.md)
-- 🟨🟩🟥 [Shan / Tai](README_SHN.md)
-- 🇲🇲 [မြန်မာ](README_MY.md)
-- 🇹🇭 [ภาษาไทย](README_TH.md)
+ 🇬🇧 [English](README.md) | 🟨🟩🟥 [Shan / Tai](README_SHN.md) | 🇲🇲 [မြန်မာ](README_MY.md)| 🇹🇭 [ภาษาไทย](README_TH.md)
 
 # Lak Ni & Lak Jeng — Tai Calendar Algorithms in Python
 
@@ -543,7 +538,7 @@ Honest limitations you should know before citing this code:
 **Primary sources for the algorithms**
 
 1. Süa Tai Möng, "Method for Calculating the Lak Jeng Cycle" (Shan, 2021) —
-   basis of `lak_jeng.py`; analysis in the accompanying project README.
+   basis of `lak_jeng.py`; analysis in the accompanying project README. https://www.facebook.com/share/1DqdDNsA1o/?mibextid=wwXIfr
 2. Yan Naing Aye, *"Algorithm, Program and Calculation of Myanmar Calendar"*,
    Cool-Emerald blog (2013) — lunar-phase rules, SY/LM constants, watat machinery.
    http://cool-emerald.blogspot.com/2013/06/algorithm-program-and-calculation-of.html
