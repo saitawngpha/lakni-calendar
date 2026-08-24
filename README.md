@@ -550,6 +550,7 @@ Honest limitations you should know before citing this code:
 5. Monthip Sirithaikhongchuen, *"Tai Name of the Year and Tai New Year"* (SOAS, 2007) —
    pan-Tai Mother/Son lists, new-year rules.
 6. Jean Meeus, *Astronomical Algorithms*, 2nd ed., ch. 49 — true new moon series.
+7. Pakpi Calendar. https://github.com/SaingHmineTun/pakpicalendar
 
 **Historical/astronomical background**
 
