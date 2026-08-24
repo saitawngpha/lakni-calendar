@@ -371,7 +371,7 @@ That bridge is what `lak_jeng.py --date` uses, and it is how the two scripts wer
 cross-checked against each other (§8). For the Tai-era number of a Gregorian date,
 the script computes the true **Nadaw waxing-1** (see below).
 
-### Tai New Year & the Shan month system (per ShanDate.java / PakpiCalendar)
+### Tai New Year & the Shan month system (per Pakpi&TaiCalendar App)
 
 The Tai/Shan year does **not** turn at Thingyan/Songkran (April) — it has its own
 month wheel. Verified against the decompiled `ShanDate.java`:
