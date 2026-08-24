@@ -22,9 +22,13 @@ import datetime
 import os
 import sys
 
-MOTHERS = ["Kap", "Lap", "Hai", "Mong", "Pok", "Kat", "Khot", "Hung", "Tao", "Ka"]
+MOTHERS = ["Kap", "Lap", "Hai", "Mong", "Pok", "Kat", "Khut", "Hung", "Tao", "Ka"]
 CHILDREN = ["Jai", "Pao", "Yi", "Mao", "Si", "Sai", "Singa", "Mot", "San",
             "Hao", "Met", "Kwai"]
+MOTHERS_SHAN = ["ၵၢပ်ႇ", "လပ်း", "ႁၢႆး", "မိူင်း", "ပိုၵ်း",
+                "ၵတ်း", "ၶုတ်း", "ႁုင်ႉ", "တဝ်ႇ", "ၵႃႇ"]
+CHILDREN_SHAN = ["ၸႂ်ႉ", "ပဝ်ႉ", "ယီး", "မဝ်ႉ", "သီ", "သႂ်ႉ",
+                 "သီင", "မူတ်ႉ", "သၼ်", "ႁဝ်ႉ", "မဵတ်ႉ", "ၵႂ်ႉ"]
 WEEKDAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday",
             "Thursday", "Friday"]
 
@@ -79,6 +83,10 @@ def day_names(index: int) -> tuple[str, str]:
     return MOTHERS[index % 10], CHILDREN[index % 12]
 
 
+def shan_script_names(index: int) -> tuple[str, str]:
+    return MOTHERS_SHAN[index % 10], CHILDREN_SHAN[index % 12]
+
+
 def weekday_from_a(a: int) -> str:
     return WEEKDAYS[a % 7]
 
@@ -101,6 +109,7 @@ def calculate(tai_year: int) -> dict:
     months, month_pos = divmod(el["a"] + d_miss, 30)
     idx = day_index_from_a(el["a"])
     mother, child = day_names(idx)
+    sm, sl = shan_script_names(idx)
     return {
         "t": tai_year, "y": y, "c": c, "n": n,
         **el, "m": MISSING_MULT * el["a"] - y // MISSING_SUB_DIV + MISSING_ADD,
@@ -108,6 +117,7 @@ def calculate(tai_year: int) -> dict:
         "months": months, "month_pos": month_pos,
         "weekday": weekday_from_a(el["a"]),
         "index": idx, "mother": mother, "child": child,
+        "shan": f"{sm}{sl}",
         "year_mother": year_cycle(tai_year)[0],
         "year_child": year_cycle(tai_year)[1],
     }
@@ -125,21 +135,56 @@ def report_year(t: int) -> str:
         f"  missing M            : {r['m']}  -> D={r['d_miss']}  P={r['p_miss']}",
         f"  lunar months         : {r['months']} completed, position {r['month_pos']}",
         f"  weekday              : {r['weekday']}",
-        f"  day cycle            : {r['mother']} {r['child']}  (index {r['index']}/60)",
+        f"  day cycle            : {r['mother']} {r['child']} / {r['shan']}  (index {r['index']}/60)",
         f"  year cycle           : {r['year_mother']} {r['year_child']}",
     ])
+
+
+def tai_new_year_jdn(gregorian_year: int, tz_hours: float = None) -> int:
+    import lak_ni
+    tz = tz_hours if tz_hours is not None else lak_ni.DEFAULT_TZ_HOURS
+    lo = to_jdn(gregorian_year, 11, 15)
+    hi = to_jdn(gregorian_year, 12, 31)
+    best = None
+    k = round((lo - 2451550.09766) / 29.530588861) - 1
+    while True:
+        conj_day = int(lak_ni.true_new_moon_jde(k) + tz / 24 + 0.5)
+        if conj_day > hi:
+            break
+        if conj_day >= lo:
+            best = conj_day
+        k += 1
+    if best is None:
+        raise RuntimeError(f"no Nadaw new moon found for {gregorian_year}")
+    return best + 1
+
+
+def tai_year_from_gregorian(y: int, m: int, d: int) -> int:
+    jdn = to_jdn(y, m, d)
+    return y + 95 if jdn >= tai_new_year_jdn(y) else y + 94
 
 
 def report_date(y: int, m: int, d: int) -> str:
     a = a_for_date(y, m, d)
     idx = day_index_from_a(a)
     mother, child = day_names(idx)
-    t_est = y + 95 if (m, d) >= (12, 5) else y + 94
+    sm, sl = shan_script_names(idx)
+    t = tai_year_from_gregorian(y, m, d)
+    jdn = to_jdn(y, m, d)
+    this_ny = tai_new_year_jdn(y)
+    if jdn >= this_ny:
+        ny_prev, ny_next = this_ny, tai_new_year_jdn(y + 1)
+    else:
+        ny_prev, ny_next = tai_new_year_jdn(y - 1), this_ny
+    import datetime as _dt
+    fmt = lambda j: _dt.date.fromordinal(_dt.date(1858, 11, 17).toordinal() + j - 2400001).isoformat()
+    market = "yes (Kat/Hut or Tao day)" if idx % 10 in (2, 7) else "no"
     return "\n".join([
         f"Gregorian       : {datetime.date(y, m, d).isoformat()} ({weekday_from_a(a)})",
+        f"Tai (Shan) year : {t}  [began {fmt(ny_prev)}, next NY {fmt(ny_next)}]",
         f"elapsed days A  : {a}",
-        f"day cycle       : {mother} {child}  (index {idx}/60)",
-        f"Tai year (est.) : {t_est}  [nominal early-December boundary]",
+        f"day cycle       : {mother} {child} / {sm}{sl}  (index {idx}/60)",
+        f"market day      : {market}",
     ])
 
 
@@ -178,9 +223,18 @@ def self_test() -> None:
     assert weekday_from_a(a_today) == "Sunday"
     m_, c_ = day_names(day_index_from_a(a_today))
     assert (m_, c_) == ("Kat", "Sai")
-
+    sm_, sl_ = shan_script_names(day_index_from_a(a_today))
+    assert (sm_, sl_) == ("ၵတ်း", "သႂ်ႉ")
+    assert len(MOTHERS_SHAN) == 10 and len(CHILDREN_SHAN) == 12
+    s2115 = calculate(2115)
+    assert s2115["shan"] == "တဝ်ႇသီ"
+    assert tai_year_from_gregorian(2026, 8, 23) == 2120
+    assert tai_year_from_gregorian(2021, 12, 5) == 2116
+    assert tai_year_from_gregorian(2021, 12, 4) == 2115
+    assert tai_year_from_gregorian(2025, 12, 31) == 2120
     print("all self-tests passed "
-          "(worked example reproduced; 1827 days cross-checked against lak_ni)")
+          "(worked example reproduced; 1827 days cross-checked against lak_ni; "
+          "Shan year 2120 verified)")
 
 
 def main(argv=None) -> int:
