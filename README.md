@@ -1,5 +1,11 @@
+## 🌐 Languages
+
+- 🇬🇧 [English](README.md)
+- 🟨🟩🟥 [Shan / Tai](README_SHN.md)
+- 🇲🇲 [မြန်မာ](README_MY.md)
+- 🇹🇭 [ภาษาไทย](README_TH.md)
+
 # Lak Ni & Lak Jeng — Tai Calendar Algorithms in Python
-- 🇬🇧 [English](README.md) | - 🟨🟩🟥 [Shan / Tai](README_SHN.md) | - 🇲🇲 [မြန်မာ](README_MY.md) | - 🇹🇭 [ภาษาไทย](README_TH.md)
 
 A hands-on research toolkit for the **sexagenary ("60-name") calendar** used by the Tai
 peoples — including the **Tai Ahom** of Assam, India (who call it *Lak Ni* / *Lakni*) and
@@ -367,8 +373,99 @@ A(date) = 772521 + (JDN(date) − 2459554)
 ```
 
 That bridge is what `lak_jeng.py --date` uses, and it is how the two scripts were
-cross-checked against each other (§8). For the Tai-era number of a Gregorian date the
-script estimates `T ≈ AD + 95`, flipping in early December (nominal boundary).
+cross-checked against each other (§8). For the Tai-era number of a Gregorian date,
+the script computes the true **Nadaw waxing-1** (see below).
+
+### Tai New Year & the Shan month system (per ShanDate.java / PakpiCalendar)
+
+The Tai/Shan year does **not** turn at Thingyan/Songkran (April) — it has its own
+month wheel. Verified against the decompiled `ShanDate.java`:
+
+```
+Shan month = Myanmar month + 4   (mod 12)
+→ Shan month 1 = Nadaw (MM 9); Shan months run Nadaw(1) … Tabaung(4), Tagu(5) … Waso(12)
+
+Shan year = Myanmar year + 733   for MM months 9–12  (Shan months 1–4)
+          = Myanmar year + 732   for MM months 1–8   (Shan months 5–12)
+```
+
+So the Tai year turns at **first waxing of Nadaw** — the *Margasirsa* new moon in
+late November/mid December. `lak_jeng.py` locates it astronomically (true new moon,
+Myanmar timezone, latest conjunction in Nov 15–Dec 31) instead of a fixed date:
+
+| Anchor | Date | Check |
+|---|---|---|
+| Tai NY 2116 | Sun **2021-12-05** | = Lak-Jeng README anchor; A = 772,521 ✓ |
+| Tai NY 2120 | **2025-12-21** | day name = Kap-Jai (cycle position 0!) |
+| today 2026-08-23 | Tai year **2120** | matches community usage ✓ |
+| next NY (2121) | 2026-12-10 | computed |
+
+The app also confirms our day-cycle alignment algebraically: its
+`(epochDay+7) mod 10 / (epochDay+5) mod 12` differs from `(JDN − 2433191) mod 60`
+by constants divisible by 10, 12 — identical count. Its market-day rule
+(`mePee ∈ {2,7}` = ဝၼ်းၵၢတ်ႇမိူင်း) rides the same stem wheel; `lak_jeng.py --date`
+now reports it.
+
+### The app's `WanTai60` day name = our shared cycle (verified)
+
+`ShanDate.getWannTai60(epochDay)` names each civil day with the Shan List-A set:
+
+```java
+mePeeInt  = (|epochDay| + 7) % 10   // Kap, Lap, Hai, Möng, Pok, Kat, Khut, Hung, Tao, Ka
+lukPeeInt = (|epochDay| + 5) % 12   // Jai, Pao, Yi, Mao, Si, Sai, Singa, Mot, San, Hao, Met, Kwai
+```
+
+Since `JDN = epochDay + 2440588`, the constants differ from ours by exactly
+`7390 = 739×10` and `7392 = 616×12` — so all three implementations in this repo
+produce the **same continuous cycle**. Empirically: 1,827 consecutive days
+(2023–2027) show zero positional mismatches against `lak_ni.py` and
+`lak_jeng.py`; the only differences are romanization (`Khut` vs `Khot/Koat`
+at stem position #6). Spot checks: 1970-01-01 → Hung-Sai; 2000-01-01 →
+Pok(Puek)-Singa; 2026-08-23 → Kat(Kut)-Sai.
+
+### Shan-script names (from `ShanDate.java`, PakpiCalendar)
+
+The canonical Shan script arrays used by both `lak_ni.py` and `lak_jeng.py`
+(positionally aligned with every romanization table above):
+
+**MePee / Mothers (10)**
+
+| # | Roman | Shan | | # | Roman | Shan |
+|---|---|---|---|---|---|---|
+| 0 | Kap/Kra | ၵၢပ်ႇ | | 5 | Kat/Kut | ၵတ်း |
+| 1 | Lap/Lup | လပ်း | | 6 | Khut/Koat | ၶုတ်း |
+| 2 | Hai/Hut | ႁၢႆး | | 7 | Hung/Hong | ႁုင်ႉ |
+| 3 | Möng/Muang | မိူင်း | | 8 | Tao | တဝ်ႇ |
+| 4 | Pok/Puek | ပိုၵ်း | | 9 | Ka | ၵႃႇ |
+
+**LukPee / Children (12)**
+
+| # | Roman | Shan | | # | Roman | Shan |
+|---|---|---|---|---|---|---|
+| 0 | Jai (rat) | ၸႂ်ႉ | | 6 | Singa (horse) | သီင |
+| 1 | Pao (ox) | ပဝ်ႉ | | 7 | Mot (goat) | မူတ်ႉ |
+| 2 | Yi (tiger) | ယီး | | 8 | San (monkey) | သၼ် |
+| 3 | Mao (hare) | မဝ်ႉ | | 9 | Hao (cock) | ႁဝ်ႉ |
+| 4 | Si (naga) | သီ | | 10 | Met (dog) | မဵတ်ႉ |
+| 5 | Sai (snake) | သႂ်ႉ | | 11 | Kwai (pig) | ၵႂ်ႉ |
+
+Both scripts print these: `lak_jeng.py` renders day cycles as
+`Tao Si / တဝ်ႇသီ` (matching the source document), and `lak_ni.py` adds a
+"Day in Shan" line (e.g., today → `ၵတ်းသႂ်ႉ`). Regression tests pin
+today's pair as (`ၵတ်း`, `သႂ်ႉ`) in both files.
+
+#### ⚠️ Bug found in the app 🐛
+
+`Math.abs(epochDay)` **mirrors dates before 1970** instead of counting backwards.
+Example: for **1969-12-31** the phone would display *Tao-Singa*, but the true
+shared count says **Khot-Si (庚辰)**. Only dates ≥ 1970-01-01 are affected.
+Our Python uses proper negative modulo and stays correct across the 1970
+boundary. If you ever port `WanTai60` elsewhere, **drop the `abs()`**:
+
+```python
+mi = (epoch_day + 7) % 10     # no abs()!
+li = (epoch_day + 5) % 12
+```
 
 ---
 

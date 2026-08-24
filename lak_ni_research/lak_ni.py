@@ -40,6 +40,11 @@ SONS_TAI = [
     "Saan (monkey)", "Rao/Hao (cock)", "Set/Sed (dog)", "Kai (pig)",
 ]
 
+MOTHERS_SHAN_SCRIPT = ["ၵၢပ်ႇ", "လပ်း", "ႁၢႆး", "မိူင်း", "ပိုၵ်း",
+                       "ၵတ်း", "ၶုတ်း", "ႁုင်ႉ", "တဝ်ႇ", "ၵႃႇ"]
+CHILDREN_SHAN_SCRIPT = ["ၸႂ်ႉ", "ပဝ်ႉ", "ယီး", "မဝ်ႉ", "သီ", "သႂ်ႉ",
+                        "သီင", "မူတ်ႉ", "သၼ်", "ႁဝ်ႉ", "မဵတ်ႉ", "ၵႂ်ႉ"]
+
 WEEKDAYS = [
     "Sun (Ngarng/Garuda)", "Mon (Kan/Chandra)", "Tue (Angarak/Mars)",
     "Wed (Budh/Mercury)", "Thu (Brihaspati/Jupiter)", "Fri (Sukra/Venus)",
@@ -131,6 +136,9 @@ def day_sexagenary(jdn: int) -> dict:
         "index": i,
         "mother": MOTHERS_TAI[i % 10],
         "son": SONS_TAI[i % 12],
+        "mother_shan": MOTHERS_SHAN_SCRIPT[i % 10],
+        "son_shan": CHILDREN_SHAN_SCRIPT[i % 12],
+        "shan": f"{MOTHERS_SHAN_SCRIPT[i % 10]}{CHILDREN_SHAN_SCRIPT[i % 12]}",
         "name": f"{MOTHERS_TAI[i % 10].split()[0]}-{SONS_TAI[i % 12].split('/')[0].split()[0]}",
     }
 
@@ -217,6 +225,7 @@ def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS,
         f"Shan variant   : {st['shan_stem']}-{st['son'].split('/')[0].split()[0]}",
         f"Sakkaraj era   : {cs} CS (sok {sok_digit} = {sok_names[sok_digit]})",
         f"Day name       : {dy['name']}  ({dy['index']}/60) [{dy['mother']} x {dy['son']}]",
+        f"Day in Shan    : {dy['shan']}  ({dy['mother_shan']} {dy['son_shan']})",
         f"Lunar phase    : {phase_txt}  [UTC+{tz_hours:g}, Myanmar-style]",
         f"Julian Day No. : {jdn}",
     ]
@@ -248,6 +257,9 @@ def self_test() -> None:
     assert WEEKDAYS[(datetime.date(2026, 8, 23).weekday() + 1) % 7].startswith("Sun")
     assert day_sexagenary(to_jdn(1949, 10, 1))["name"] == "Kra-Jai"
     assert day_sexagenary(to_jdn(2026, 8, 23))["name"] == "Kut-Sai"
+    assert len(MOTHERS_SHAN_SCRIPT) == 10 and len(CHILDREN_SHAN_SCRIPT) == 12
+    _dy = day_sexagenary(to_jdn(2026, 8, 23))
+    assert (_dy["mother_shan"], _dy["son_shan"]) == ("ၵတ်း", "သႂ်ႉ")
     assert abs(true_new_moon_jde(0) - 2451550.25993) < 0.001
     assert abs(true_new_moon_jde(round((2021.92 - 2000) * 12.3685)) - 2459552.8224) < 0.01
     assert lunar_phase(to_jdn(2021, 12, 5)) == {
