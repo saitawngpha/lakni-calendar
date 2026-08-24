@@ -418,7 +418,7 @@ produce the **same continuous cycle**. Empirically: 1,827 consecutive days
 at stem position #6). Spot checks: 1970-01-01 → Hung-Sai; 2000-01-01 →
 Pok(Puek)-Singa; 2026-08-23 → Kat(Kut)-Sai.
 
-### Shan-script names (from `ShanDate.java`, PakpiCalendar)
+### Shan-script names (from Pakpi&TaiCalendar App)
 
 The canonical Shan script arrays used by both `lak_ni.py` and `lak_jeng.py`
 (positionally aligned with every romanization table above):
