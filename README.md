@@ -2,6 +2,15 @@
 
 # Lak Ni & Lak Jeng — Tai Calendar Algorithms in Python
 
+<p align="center">
+  <img
+    src="src/poster_lakni_lakjeng.png"
+    alt="Lak Ni and Lak Jeng Calendar Research"
+    width="100%"
+    height="300"
+  />
+</p>
+
 A hands-on research toolkit for the **sexagenary ("60-name") calendar** used by the Tai
 peoples — including the **Tai Ahom** of Assam, India (who call it *Lak Ni* / *Lakni*) and
 the **Shan** of Myanmar (whose hand-calculation method is known as *Lak Jeng*).
