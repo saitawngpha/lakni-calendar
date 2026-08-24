@@ -7,7 +7,7 @@
     src="src/poster_lakni_lakjeng.png"
     alt="Lak Ni and Lak Jeng Calendar Research"
     width="100%"
-    height="300"
+    height="450"
   />
 </p>
 
