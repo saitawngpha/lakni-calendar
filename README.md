@@ -16,7 +16,7 @@ reference data:
 | `lak_jeng.py` | Shan *Lak Jeng* (Myanmar/Yunnan) | Sūrya Siddhānta integer day-count (*ahargaṇa*) |
 | `sakkaraj.py` | Chula Sakarat / Thet Kayit era machinery | Myanmar watat rules + Thai avoman integers |
 
-Companion research notes: **`SAKKARAJ.md`** — deep dive into the Sakkaraj era family
+Companion research notes: [**`SAKKARAJ.md`**](SAKKARAJ.md) — deep dive into the Sakkaraj era family
 (Anjana 691 BCE → Buddha 544 BCE → Śaka/Mahā 78 CE → **Cula Sakarat 22 March 638 CE**),
 the Makaranta→Thandeikta→Advisory-Board calculation eras, watat intercalation logic,
 regional month-numbering hazards, and the Thai/Burmese leap-day placement difference.
