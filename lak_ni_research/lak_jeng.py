@@ -11,10 +11,14 @@ cycle positions (Kap=Kra/Karp, Kat=Kut/Kud, Mong=Muang, Pok=Puek,
 Khot=Koat, Hung=Hong, Mot=Met, Kwai=Kai). Positions are verified identical
 to lak_ni.py's continuous gan-zhi day count (--test cross-checks daily).
 
-Gregorian bridge uses the source's own dated pair: Tai Year 2116 began
-Sunday 5 December 2021 with A = 772521 elapsed days. Note the source's
-formula applied to T=2116 yields A=772531; the 10-day gap is internal to
-the source article (its epoch offsets are admittedly undervived).
+Gregorian day-cycle bridge uses the source's dated pair: 5 December 2021
+had A = 772521 elapsed days. Tai/Shan year boundaries are calculated
+separately from conventional Nadaw waxing 1 using the complete Myanmar
+calendar rules; this avoids guessing the last astronomical new moon of the year.
+
+The source formula applied to T=2116 yields A=772531, ten days away from the
+dated A value. ``calculate`` therefore reproduces the source worksheet as a
+research hypothesis; it is not used to date Gregorian days.
 """
 
 import argparse
@@ -141,22 +145,9 @@ def report_year(t: int) -> str:
 
 
 def tai_new_year_jdn(gregorian_year: int, tz_hours: float = None) -> int:
-    import lak_ni
-    tz = tz_hours if tz_hours is not None else lak_ni.DEFAULT_TZ_HOURS
-    lo = to_jdn(gregorian_year, 11, 15)
-    hi = to_jdn(gregorian_year, 12, 31)
-    best = None
-    k = round((lo - 2451550.09766) / 29.530588861) - 1
-    while True:
-        conj_day = int(lak_ni.true_new_moon_jde(k) + tz / 24 + 0.5)
-        if conj_day > hi:
-            break
-        if conj_day >= lo:
-            best = conj_day
-        k += 1
-    if best is None:
-        raise RuntimeError(f"no Nadaw new moon found for {gregorian_year}")
-    return best + 1
+    del tz_hours  # Conventional calendar dates do not move with true-conjunction timezones.
+    import sakkaraj
+    return sakkaraj.myanmar_to_jdn(gregorian_year - 638, 9, 1)
 
 
 def tai_year_from_gregorian(y: int, m: int, d: int) -> int:
@@ -178,7 +169,7 @@ def report_date(y: int, m: int, d: int) -> str:
         ny_prev, ny_next = tai_new_year_jdn(y - 1), this_ny
     import datetime as _dt
     fmt = lambda j: _dt.date.fromordinal(_dt.date(1858, 11, 17).toordinal() + j - 2400001).isoformat()
-    market = "yes (Kat/Hut or Tao day)" if idx % 10 in (2, 7) else "no"
+    market = "yes (Hai/Hut or Hung/Hong stem)" if idx % 10 in (2, 7) else "no"
     return "\n".join([
         f"Gregorian       : {datetime.date(y, m, d).isoformat()} ({weekday_from_a(a)})",
         f"Tai (Shan) year : {t}  [began {fmt(ny_prev)}, next NY {fmt(ny_next)}]",
@@ -229,8 +220,9 @@ def self_test() -> None:
     s2115 = calculate(2115)
     assert s2115["shan"] == "တဝ်ႇသီ"
     assert tai_year_from_gregorian(2026, 8, 23) == 2120
-    assert tai_year_from_gregorian(2021, 12, 5) == 2116
-    assert tai_year_from_gregorian(2021, 12, 4) == 2115
+    assert tai_year_from_gregorian(2021, 12, 4) == 2116
+    assert tai_year_from_gregorian(2021, 12, 3) == 2115
+    assert tai_new_year_jdn(2025) == to_jdn(2025, 11, 20)
     assert tai_year_from_gregorian(2025, 12, 31) == 2120
     print("all self-tests passed "
           "(worked example reproduced; 1827 days cross-checked against lak_ni; "

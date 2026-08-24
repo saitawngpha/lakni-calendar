@@ -36,8 +36,9 @@ Thus April 1999 – April 2000 = CS 1361.
 
 ## 2. The astronomical engine
 
-All Sakkaraj calendars are **mean** lunisolar systems built on Sūrya Siddhānta stock,
-with two historical layers in Burma and one uniform layer elsewhere:
+Myanmar calendar calculation is a **mean** lunisolar system built on
+Sūrya Siddhānta stock. Related Sakkaraj calendars in other regions can use different
+month numbering, leap-day placement, and year boundaries.
 
 ### 2.1 Constants
 
@@ -56,13 +57,19 @@ The 703:692 tithi law gives the Metonic bundle automatically:
 *tropical-flavored* lunar wheel and the *sidereal* solar wheel (~12 days drift by ME 1100)
 is the central drama of Sakkaraj history.
 
-### 2.2 Three Burmese calculation eras
+### 2.2 Five implemented Myanmar calculation regimes
 
-| Era | Span | Intercalation rule |
-|---|---|---|
-| **Thuriya Theiddanta** (Makaranta) | to 1853 CE (ME < 1215) | pure Metonic: watat years = positions **2, 5, 7, 10, 13, 15, 18** of the 19-cycle |
-| **Thandeikta** | 1853–1950 (ME 1215–1311) | modern SY; Metonic abandoned; thresholds on accumulated excess days (4-month window) |
-| **Current (Advisory Board)** | 1950– (ME ≥ 1312) | same idea, 8-month window; constants below |
+| Regime | Span | `WO` | `NM` | Watat rule |
+|---|---:|---:|---:|---|
+| Makaranta 1 | ME <= 797 | -1.1 plus exceptions | -1 | 19-year Metonic |
+| Makaranta 2 | ME 798-1099 | -1.1 plus exceptions | -1 | 19-year Metonic |
+| Thandeikta | ME 1100-1216 | -0.85 plus exceptions | -1 | 19-year Metonic plus exceptions |
+| Colonial | ME 1217-1311 | -1 plus exceptions | 4 | excess-day threshold plus exceptions |
+| Post-independence | ME >= 1312 | -0.5 plus exceptions | 8 | excess-day threshold plus exceptions |
+
+The full-moon and watat exception tables are part of the algorithm, not optional
+corrections. Omitting them reverses ME 1263/1264 and 1344/1345 and puts the Second Waso
+full moon of ME 1377 one day early.
 
 Fixed insertion points (unique to Burma, unlike India): the leap-month **First Waso**
 (30 days, always immediately before Waso), and the leap-day always as a **second day of
@@ -154,7 +161,8 @@ Worked (Gislén): CS **1238** → h₀ = 452,191; kammacabala 161 → solar leap
 ### 3.4 Era arithmetic cheat-sheet
 
 ```
-CS  = AD − 638        (valid after mid-April; Jan–Apr belongs to CS = AD − 639)
+CS  = AD − 638        after the computed New Year day following atat
+    = AD − 639        before that year's computed boundary
 BE  = CS + 1182       (Burma/Ceylon); Thailand BE = CS + 1181
 MS/Śaka = AD − 78     (after mid-March)
 Anjana  = AD + 691
