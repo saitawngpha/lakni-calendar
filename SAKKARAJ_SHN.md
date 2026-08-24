@@ -1,5 +1,8 @@
 # ပီသၵ်ႉၵရဵတ်ႈ — မၢႆတွင်းၶူၼ်ႉၶႂႃႉလိုၵ်ႉ
 
+> ⚠️ Translation pending community review. For the corrected five-era Myanmar
+> algorithm and exception tables, use the English `README.md` and Python tests.
+
 လိၵ်ႈၶူၼ်ႉၶႂႃႉၵိုၵ်း `lak_ni.py` / `lak_jeng.py`။ ဢုပ်ႇလွင်ႈ **Chula Sakarat** (သက္ကရာဇ် *Thet Kayit*, จุลศักราช *Chula Sakarat*, ចុល្លសករាជ) — “ပီဢွၼ်ႇ” ဢၼ်ပဵၼ်ၶိူင်ႈမၵ်းယၢမ်းလၵ်းၶွင် Southeast Asia ပွတ်းလိၼ်လူင်: မိူင်းမၢၼ်ႈ၊ ထႆး၊ လၢဝ်း၊ ၵမ်ႇပေႃးတီးယႃး၊ မိူင်းတႆး၊ Sipsongpanna လႄႈ — ၵိုၵ်း Lak-Ni — မိူင်း Ahom။
 
 ပိူင်သၢင်ႈ: **`sakkaraj.py`** (folder လဵဝ်ၵၼ်), တူၺ်းသွပ်ႇၵပ်းၶေႃႈမုၼ်းမၢႆလၵ်းဢၼ်ပိုၼ်ၽႄႈဝႆႉယဝ်ႉ။

@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-"""Lak-Ni (Tai Ahom calendar) converter.
+"""Comparative Tai Ahom Lakni calendar calculator.
 
 Converts Gregorian dates into the Tai Ahom Lak-Ni system:
-  * Me-Pi 60-year cycle name (popular Ahom tradition, anchored 1193 CE =
-    "Mungkeu", birth year of Sukaphaa; verified: 1215 = Katrau, 1268 = Taoni,
-    1253 = Mungkeu again)
+  * Historical Ahom Lakni cycle, anchored at Kap Cheu in November 1228 and
+    again in 2008, with the canonical Mother x Child table published by
+    Kapoor (2021, Tables 7-9)
   * Structural Tai year name (Mother x Son/animal, aligned to the pan-Tai
     cycle where 1984 CE = Kra/Karp Jai, the Wood-Rat year)
-  * Sakkaraj (Chula Sakarat) era year (= AD - 638)
-  * Weekday, 60-day Mother-Son day name, and Myanmar-style lunar phase
-    (waxing/waning day, full moon, new-moon day). The civil day containing
-    the true new moon (Meeus algorithm) ENDS the old month; waxing day 1 is
-    the next day. Default timezone UTC+6:30 (Myanmar); use --tz 5.5 for
-    Assam, which can shift the boundary by one day.
+  * Sakkaraj (Chula Sakarat) era year with its computed solar New Year boundary
+  * Weekday, 60-day Mother-Son day name, conventional Myanmar calendar date,
+    and a separately labelled true-conjunction phase estimate. The latter is
+    astronomical evidence, not a traditional month conversion. Default
+    timezone UTC+6:30; use --tz 5.5 for an Assam moon estimate.
 
 CAVEATS
-  * The popular 60-name Me-Pi list below comes from published popular sources
-    and contains transliteration inconsistencies; replace ME_PI_60 with the
-    Terwiel & Ranoo (1992) Table 4 readings for scholarly work.
+  * Exact Ahom month boundaries are reconstructed here by aligning Dinching
+    with conventional Myanmar/Shan Nadaw. Historical communities may differ
+    by a civil day or by regional intercalation practice.
+  * ME_PI_60 is retained only as a legacy popular list and is not used for the
+    default Ahom Lakni result.
   * DAY_ANCHOR_JDN is calibrated so index 0 = a jiazi (Kap-Jai) day, using
     the verified reference 1949-10-01 CE = jiazi day (JDN 2433191). This makes
     the 60-day count continuous with the shared Tai/Chinese day cycle, e.g.
@@ -51,8 +52,19 @@ WEEKDAYS = [
     "Sat (Sanichar/Saturn)",
 ]
 
-YEAR_ANCHOR_AD = 1193
-YEAR_ANCHOR_NAME = "Mungkeu"
+AHOM_CYCLE_ANCHOR_YEAR = 2008
+AHOM_CYCLE_ANCHOR_NAME = "Kap Cheu"
+
+AHOM_LAKNI_MOTHERS = [
+    "Kap", "Dap", "Rai", "Mung", "Plek", "Kat", "Khut", "Rung", "Tao", "Ka",
+]
+AHOM_LAKNI_CHILDREN = [
+    "Cheu", "Plao", "Ngi", "Mao", "Shi", "Shiu", "Shinga", "Mut", "San", "Rao", "Mit", "Keu",
+]
+AHOM_LAKNI_60 = [
+    f"{AHOM_LAKNI_MOTHERS[i % 10]} {AHOM_LAKNI_CHILDREN[i % 12]}"
+    for i in range(60)
+]
 
 AHOM_STEMS = [
     ("Kap", "jia 甲", "wood"), ("Dap", "yi 乙", "wood"),
@@ -66,7 +78,7 @@ SHAN_STEMS = ["Kra/Kap", "Lup/Lap", "Hut/Hai", "Muang/Möng", "Puek/Pök",
               "Kut/Kud", "Koat/Khot", "Hong/Hung", "Tao/Thao", "Ka"]
 
 YEAR_BOUNDS = {"jan1": (1, 1), "lichun": (2, 4), "songkran": (4, 14)}
-DEFAULT_BOUNDARY = "songkran"
+DEFAULT_BOUNDARY = "jan1"
 
 EPOCH_STEM_BRANCH = 4
 
@@ -98,11 +110,36 @@ def to_jdn(y: int, m: int, d: int) -> int:
 
 
 def lak_ni_year(ad_year: int) -> dict:
-    pos = ((ad_year - YEAR_ANCHOR_AD) % 60) + 1
+    """Legacy popular Me-Pi list; retained for comparison, not canonical dating."""
+    year_anchor_ad = 1193
+    pos = ((ad_year - year_anchor_ad) % 60) + 1
     return {
         "position": pos,
         "me_pi_popular": ME_PI_60[pos - 1],
-        "cycle_number": ((ad_year - YEAR_ANCHOR_AD) // 60) + 1,
+        "cycle_number": ((ad_year - year_anchor_ad) // 60) + 1,
+    }
+
+
+def ahom_new_year_jdn(gregorian_year: int) -> int:
+    """Reconstruct Dinching waxing 1 from conventional Nadaw waxing 1."""
+    import sakkaraj as _sakkaraj
+    return _sakkaraj.myanmar_to_jdn(gregorian_year - 638, 9, 1)
+
+
+def ahom_lakni_for_date(y: int, m: int, d: int) -> dict:
+    import sakkaraj as _sakkaraj
+    jdn = to_jdn(y, m, d)
+    this_start = ahom_new_year_jdn(y)
+    cycle_year = y if jdn >= this_start else y - 1
+    start_jdn = this_start if cycle_year == y else ahom_new_year_jdn(y - 1)
+    pos = ((cycle_year - AHOM_CYCLE_ANCHOR_YEAR) % 60) + 1
+    return {
+        "position": pos,
+        "name": AHOM_LAKNI_60[pos - 1],
+        "cycle_year": cycle_year,
+        "start_jdn": start_jdn,
+        "start_date": _sakkaraj.jdn_to_gregorian(start_jdn),
+        "boundary_model": "Dinching aligned to conventional Nadaw waxing 1",
     }
 
 
@@ -205,34 +242,43 @@ def lunar_phase(jdn: int, tz_hours: float = DEFAULT_TZ_HOURS) -> dict:
 
 def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS,
                 rule: str = DEFAULT_BOUNDARY) -> str:
+    import sakkaraj as _sakkaraj
     jdn = to_jdn(y, m, d)
     dt = datetime.date(y, m, d)
     ty = tai_year_for(y, m, d, rule)
-    yr = lak_ni_year(ty)
+    ahom = ahom_lakni_for_date(y, m, d)
     st = tai_structural_year(ty)
     dy = day_sexagenary(jdn)
     ld = lunar_phase(jdn, tz_hours)
+    md = _sakkaraj.jdn_to_myanmar(jdn)
     phase_txt = ld["phase"] if ld["day"] is None else f"{ld['phase']} day {ld['day']}"
-    cs = sakkaraj(ty)
+    cs = _sakkaraj.cs_year_for(y, m, d)
     sok_digit = cs % 10
     sok_names = ["samritthisok", "ekasok", "thosok", "trisok", "chattawasok",
                  "benchasok", "chosok", "sappasok", "atthasok", "noppasok"]
     lines = [
         f"Gregorian date : {dt.isoformat()} ({WEEKDAYS[(dt.weekday() + 1) % 7]})",
-        f"Tai year       : {ty} (turns {rule}; Jan-Aug dates may use y-1)",
-        f"Lak-Ni year    : {yr['position']}/60 \"{yr['me_pi_popular']}\" (folk Me-Pi count, anchored 1193 CE)",
-        f"Year name      : {st['name']} = {st['element']} {st['son'].split('(')[1][:-1]}  [{st['stem']} ({st['stem_chinese']}) x {st['son']}]",
-        f"Shan variant   : {st['shan_stem']}-{st['son'].split('/')[0].split()[0]}",
+        f"Ahom Lakni     : {ahom['position']}/60 {ahom['name']}  [began {ahom['start_date']}; reconstructed Dinching boundary]",
+        f"Ganzhi compare : {st['name']} = {st['element']} {st['son'].split('(')[1][:-1]}  [civil year {ty}, boundary {rule}]",
+        f"Shan spelling  : {st['shan_stem']}-{st['son'].split('/')[0].split()[0]}",
         f"Sakkaraj era   : {cs} CS (sok {sok_digit} = {sok_names[sok_digit]})",
         f"Day name       : {dy['name']}  ({dy['index']}/60) [{dy['mother']} x {dy['son']}]",
         f"Day in Shan    : {dy['shan']}  ({dy['mother_shan']} {dy['son_shan']})",
-        f"Lunar phase    : {phase_txt}  [UTC+{tz_hours:g}, Myanmar-style]",
+        f"Myanmar date   : ME {md['my']} {md['month_name']} {md['phase']} {md['fortnight_day']}",
+        f"Moon estimate  : {phase_txt}  [true-conjunction estimate, UTC+{tz_hours:g}]",
         f"Julian Day No. : {jdn}",
     ]
     return "\n".join(lines)
 
 
 def self_test() -> None:
+    assert len(AHOM_LAKNI_60) == 60
+    assert AHOM_LAKNI_60[0] == "Kap Cheu"
+    assert AHOM_LAKNI_60[17] == "Rung Shiu"
+    assert AHOM_LAKNI_60[59] == "Ka Keu"
+    ahom26 = ahom_lakni_for_date(2026, 8, 23)
+    assert (ahom26["position"], ahom26["name"]) == (18, "Rung Shiu")
+    assert ahom26["start_date"] == datetime.date(2025, 11, 20)
     assert len(ME_PI_60) == 60
     assert lak_ni_year(1193)["me_pi_popular"] == "Mungkeu"
     assert lak_ni_year(1215)["me_pi_popular"] == "Katrau"
@@ -247,9 +293,9 @@ def self_test() -> None:
     assert st26["son"].startswith("Singa") and st26["cycle_index"] == 42
     assert tai_structural_year(2025)["stem"] == "Dap"
     assert tai_structural_year(2025)["son"].startswith("Sai")
-    assert tai_year_for(2026, 1, 1) == 2025
-    assert tai_year_for(2026, 4, 13) == 2025
-    assert tai_year_for(2026, 4, 14) == 2026
+    assert tai_year_for(2026, 1, 1, "songkran") == 2025
+    assert tai_year_for(2026, 4, 13, "songkran") == 2025
+    assert tai_year_for(2026, 4, 14, "songkran") == 2026
     assert tai_year_for(2026, 2, 3, "lichun") == 2025
     assert tai_year_for(2026, 12, 31, "jan1") == 2026
     assert sakkaraj(2026) == 1388
@@ -279,7 +325,7 @@ def main(argv=None) -> int:
     p.add_argument("--tz", type=float, default=DEFAULT_TZ_HOURS,
                    help="timezone offset hours for lunar phase (default 6.5 Myanmar; 5.5 Assam)")
     p.add_argument("--boundary", choices=sorted(YEAR_BOUNDS), default=DEFAULT_BOUNDARY,
-                   help="year-turn rule: songkran (Apr 14, Tai/Ahom), lichun (Feb 4, Chinese), jan1")
+                   help="boundary for the comparative ganzhi year only; Ahom Lakni always uses Dinching")
     p.add_argument("--calibrate", nargs=2, metavar=("DATE", "ANIMAL"),
                    help="print candidate DAY_ANCHOR_JDN for a known day-animal")
     args = p.parse_args(argv)

@@ -1,5 +1,9 @@
 # Lak Ni လႄႈ Lak Jeng — ပိူင်ၼပ်ႉသွၼ်ႇပၵ်းယဵမ်ႈတႆး လူၺ်ႈ Python
 
+> ⚠️ **Translation status (2026-08-24):** The algorithms and English `README.md` have
+> been corrected. This older Shan translation still needs community review and may
+> describe superseded April-boundary and folk-cycle assumptions.
+
 ၶိူင်ႈမိုဝ်းၶူၼ်ႉၶႂႃႉလႄႈလွင်းတူၺ်း တႃႇ **ပၵ်းယဵမ်ႈ 60 ၸိုဝ်ႈ** ဢၼ်ၸၢဝ်းတႆးၸႂ်ႉတိုဝ်း — ပႃးတင်း **တႆးဢႃႇႁူမ်** မိူင်းဢႃႇသမ်ႇ၊ ဢိၼ်းတီးယႃး (ႁွင်ႉဝႃႈ *Lak Ni* / *Lakni*) လႄႈ **တႆး** မိူင်းမၢၼ်ႈ (ပိူင်ၼပ်ႉသွၼ်ႇတင်းမိုဝ်း ႁွင်ႉဝႃႈ *Lak Jeng*)။
 
 မီးပိူင်သၢင်ႈ 2 ပိူင် ဢၼ်လွတ်ႈလႅဝ်းၵၼ်၊ ၸွမ်းၸိူဝ်းၶိူဝ်းတႅမ်ႈမၢႆဝႆႉမၢင်ပိူင်။ မီးၸုမ်းတူၺ်းသွပ်ႇ ဢၼ်ယိုၼ်ယၼ်ဝႃႈ တင်း 2 ပိူင် ပၼ်ၶေႃႈတွပ်ႇမိူၼ်ၵၼ် လႄႈတူၵ်းမႅၼ်ႈၶေႃႈမုၼ်းဢိင်ဢၢင်ႈ ဢၼ်ပိုၼ်ၽႄႈဝႆႉ။
