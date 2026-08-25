@@ -6,15 +6,15 @@ Lak Jeng Cycle" (Sua Tai Mong, 21 Nov 2021), deriving from Surya Siddhanta
 mean values: 292207/800 civil days per year, corrected 7 units per 1350
 years, reproducing exactly 1577917828 civil days per 4320000 years.
 
-Spelling note: Shan names differ from Ahom transliterations for the SAME
-cycle positions (Kap=Kra/Karp, Kat=Kut/Kud, Mong=Muang, Pok=Puek,
-Khot=Koat, Hung=Hong, Mot=Met, Kwai=Kai). Positions are verified identical
-to lak_ni.py's continuous gan-zhi day count (--test cross-checks daily).
+Spelling note: Romanizations of the Tai/Shan names vary (Kap=Kra/Karp,
+Kat=Kut/Kud, Mong=Muang, Pok=Puek, Khot=Koat, Hung=Hong, Mot=Met,
+Kwai=Kai).
 
 Gregorian day-cycle bridge uses the source's dated pair: 5 December 2021
-had A = 772521 elapsed days. Tai/Shan year boundaries are calculated
-separately from conventional Nadaw waxing 1 using the complete Myanmar
-calendar rules; this avoids guessing the last astronomical new moon of the year.
+had A = 772521 elapsed days. Tai/Shan year boundaries are Tai month 1 waxing
+1, corresponding to conventional Myanmar Nadaw waxing 1. The complete
+Myanmar calendar rules avoid guessing the last astronomical new moon of the
+year. This contemporary Tai lunar boundary is not an Ahom Lakni calculation.
 
 The source formula applied to T=2116 yields A=772531, ten days away from the
 dated A value. ``calculate`` therefore reproduces the source worksheet as a
@@ -23,7 +23,6 @@ research hypothesis; it is not used to date Gregorian days.
 
 import argparse
 import datetime
-import os
 import sys
 
 MOTHERS = ["Kap", "Lap", "Hai", "Mong", "Pok", "Kat", "Khut", "Hung", "Tao", "Ka"]
@@ -147,7 +146,7 @@ def report_year(t: int) -> str:
 def tai_new_year_jdn(gregorian_year: int, tz_hours: float = None) -> int:
     del tz_hours  # Conventional calendar dates do not move with true-conjunction timezones.
     import sakkaraj
-    return sakkaraj.myanmar_to_jdn(gregorian_year - 638, 9, 1)
+    return sakkaraj.tai_lunar_new_year_jdn(gregorian_year)
 
 
 def tai_year_from_gregorian(y: int, m: int, d: int) -> int:
@@ -196,20 +195,6 @@ def self_test() -> None:
     assert weekday_from_a(BRIDGE_A) == "Sunday"
     assert day_index_from_a(BRIDGE_A) == 23
 
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import lak_ni
-
-    start = datetime.date(2023, 1, 1)
-    for i in range(1827):
-        dt = start + datetime.timedelta(days=i)
-        jdn = to_jdn(dt.year, dt.month, dt.day)
-        g_jeng = day_index_from_a(a_for_date(dt.year, dt.month, dt.day))
-        g_ni = lak_ni.day_sexagenary(jdn)["index"]
-        assert g_jeng == g_ni, f"cycle mismatch {dt}: {g_jeng} vs {g_ni}"
-        wd_jeng = weekday_from_a(a_for_date(dt.year, dt.month, dt.day))[:3].lower()
-        wd_ni = lak_ni.WEEKDAYS[(dt.weekday() + 1) % 7][:3].lower()
-        assert wd_jeng == wd_ni, f"weekday mismatch {dt}"
-
     a_today = a_for_date(2026, 8, 23)
     assert weekday_from_a(a_today) == "Sunday"
     m_, c_ = day_names(day_index_from_a(a_today))
@@ -225,8 +210,7 @@ def self_test() -> None:
     assert tai_new_year_jdn(2025) == to_jdn(2025, 11, 20)
     assert tai_year_from_gregorian(2025, 12, 31) == 2120
     print("all self-tests passed "
-          "(worked example reproduced; 1827 days cross-checked against lak_ni; "
-          "Shan year 2120 verified)")
+          "(worked example reproduced; Shan year 2120 verified)")
 
 
 def main(argv=None) -> int:
