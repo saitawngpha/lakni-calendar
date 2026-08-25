@@ -4,8 +4,8 @@ import sys
 import unittest
 
 
-RESEARCH_DIR = pathlib.Path(__file__).resolve().parents[1] / "lak_ni_research"
-sys.path.insert(0, str(RESEARCH_DIR))
+PYTHON_DIR = pathlib.Path(__file__).resolve().parents[1] / "python"
+sys.path.insert(0, str(PYTHON_DIR))
 
 import lak_jeng  # noqa: E402
 import lak_ni  # noqa: E402
