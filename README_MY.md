@@ -101,7 +101,7 @@ Ahom စာရင်းသည် တရုတ် stem များနှင့�
 ## 3. အမြန်စတင်ရန်
 
 ```bash
-cd lak_ni_research
+cd python
 
 python3 lak_ni.py                     # ယနေ့အတွက် Lak-Ni အစီရင်ခံစာအပြည့်
 python3 lak_ni.py 2026 08 23          # သတ်မှတ် Gregorian ရက်

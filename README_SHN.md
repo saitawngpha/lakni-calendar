@@ -105,7 +105,7 @@ repository ၼႆႉသၢင်ႈဝႆႉ 2 ၸိူဝ်းၶိူဝ်
 ## 3. တႄႇၸႂ်ႉလႅတ်းလႅဝ်း
 
 ```bash
-cd lak_ni_research
+cd python
 
 python3 lak_ni.py                     # မိူဝ်ႈၼႆႉ: လၢႆးငၢၼ်း Lak-Ni တဵမ်ထူၼ်ႈ
 python3 lak_ni.py 2026 08 23          # ဝၼ်း Gregorian တီႈၵျႃႉ

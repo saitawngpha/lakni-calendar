@@ -18,12 +18,39 @@ them as one universal calendar.
 No external Python package is required.
 
 ```bash
-cd lak_ni_research
+cd python
 
 python3 lak_ni.py 2026 8 23
 python3 lak_jeng.py --date 2026 8 23
 python3 sakkaraj.py 2015 7 31
 python3 -m unittest discover -s ../tests -v
+```
+
+A dependency-free C11 port of all three calculation engines is available in
+[`c/`](c/):
+
+```bash
+cmake -S c -B build/c
+cmake --build build/c
+ctest --test-dir build/c --output-on-failure
+
+build/c/lakni 2026 8 23
+build/c/lak-jeng --date 2026 8 23
+build/c/sakkaraj 2015 7 31
+```
+
+An idiomatic C++17 API and matching command-line programs are available in
+[`cpp/`](cpp/). They use the verified C calculation core and return owned C++
+value types:
+
+```bash
+cmake -S cpp -B build/cpp
+cmake --build build/cpp
+ctest --test-dir build/cpp --output-on-failure
+
+build/cpp/lakni-cpp 2026 8 23
+build/cpp/lak-jeng-cpp --date 2026 8 23
+build/cpp/sakkaraj-cpp 2015 7 31
 ```
 
 Example corrected result:
@@ -251,9 +278,9 @@ useful evidence, but it is not a traditional calendar conversion.
 
 ```bash
 python3 -m unittest discover -s tests -v
-python3 lak_ni_research/lak_ni.py --test
-python3 lak_ni_research/lak_jeng.py --test
-python3 lak_ni_research/sakkaraj.py --test
+python3 python/lak_ni.py --test
+python3 python/lak_jeng.py --test
+python3 python/sakkaraj.py --test
 ```
 
 Regression tests pin source-based facts rather than only comparing functions that share

@@ -70,7 +70,7 @@ Kra-Jai, Lup-Pao, Hai-Khan, Muang-Mao, Puek-Si, ...
 ## 3. เริ่มใช้งาน
 
 ```bash
-cd lak_ni_research
+cd python
 python3 lak_ni.py
 python3 lak_ni.py 2026 08 23
 python3 lak_ni.py --tz 5.5
