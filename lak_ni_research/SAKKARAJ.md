@@ -40,6 +40,20 @@ Myanmar calendar calculation is a **mean** lunisolar system built on
 Sūrya Siddhānta stock. Related Sakkaraj calendars in other regions can use different
 month numbering, leap-day placement, and year boundaries.
 
+### 2.0 Tai lunar New Year correspondence
+
+For the contemporary trans-border Tai/Shan lunar calendar implemented here, the year
+changes on **waxing day 1 of Tai month 1**. Its conventional Myanmar-calendar
+correspondence is **Nadaw waxing 1**, normally in November–December:
+
+```python
+sakkaraj.tai_lunar_new_year(2025)
+# Tai month 1 waxing 1 = Myanmar Nadaw waxing 1 = 2025-11-20
+```
+
+This is neither Myanmar Thingyan in April nor a calculation of historical Tai-Ahom
+Lakni. `lak_jeng.py` uses this function; `lak_ni.py` does not.
+
 ### 2.1 Constants
 
 | Constant | Value | Meaning |
@@ -116,6 +130,10 @@ Algorithms reproduce official practice, not legislate it.
 
 ## 3. Regional variants — same era, different machines
 
+For a direct comparison of Songkran, Thingyan, Lao Pi Mai, and Khmer New Year—including
+the different 2026 civil observances and the implications for conversion—see
+[`../SONGKRAN_THINGYAN.md`](../SONGKRAN_THINGYAN.md).
+
 Adopted from Burma: Lan Na (13th c.), Siam (16th c.), Lan Xang, Cambodia, Kengtung,
 Sipsongpanna. Each kept local machinery:
 
@@ -158,7 +176,57 @@ avoman      a₀ = (h₀·11 + 650) mod 692       # tithi accumulator (703:692 i
 
 Worked (Gislén): CS **1238** → h₀ = 452,191; kammacabala 161 → solar leap; a₀ = 655.
 
-### 3.4 Era arithmetic cheat-sheet
+### 3.4 How Thailand, Laos, and Cambodia obtain the New Year days
+
+The **traditional calculation** and the **modern public holidays** are separate outputs.
+For the full source audit, country terminology, and 2026 evidence, see
+[`../SONGKRAN_THINGYAN.md`](../SONGKRAN_THINGYAN.md).
+
+#### Thailand
+
+The Sūriyayātra line distinguishes the true-Sun ingress (**Mahā Songkran**) from the
+mean-Sun ingress roughly two days later (**Thaloeng Sok**, when the CS year changes).
+Its integer foundation for CS year `y` is:
+
+```text
+q, R = divmod(292207*y + 373, 800)
+h₀   = q + 1
+k    = 800 − R
+a₀   = (11*h₀ + 650) mod 692       # replace 0 by 692
+solar leap ⇔ k ≤ 207
+```
+
+For CS 1388, `h₀=506980`, `R=489`, `k=311`, and `a₀=602`, so it is a normal
+solar year. The official Thai 2026 almanac gives Mahā Songkran at **14 April
+10:34:35** and the CS change at **16 April 14:40:12**. The public holidays are instead
+the fixed civil block **13–15 April**.
+
+#### Laos
+
+The historical Lao calendar belongs to the Thai/Lao/Khmer computational branch, but its
+ritual sequence is local: **Sangkhan Luang/Long** (old year departs), one or sometimes
+two **Nao** neutral days, then **Sangkhan Khuen** (new year rises). In 2026 official Lao
+reporting assigns these to 14 April, 15 April, and 16 April respectively; the government
+holiday block is **14–16 April**. No primary Lao source found here publishes enough
+constants and true-Sun steps to reproduce an exact 2026 ingress time, so Thai, Khmer,
+or Myanmar clock times must not be substituted.
+
+#### Cambodia
+
+Faraut's Khmer method uses the same canonical early solar arithmetic as the Thai line,
+with Khmer month names and local Hora practice. The three days are **Moha Sankranta**,
+**Vanapata/Vănabot**, and **Loeung Sak**. Cambodia officially announced the 2026
+arrival at **14 April 10:48** and holidays on **14–16 April**. Its announced time is not
+identical to the Thai time, so country, longitude/time standard, and authority remain
+required metadata.
+
+The shared branch uses lunar years of 354, 355, or 384 days. A leap month is inserted
+when New Year would fall too late in Caitra/Vaiśākha; an extra day may be required when
+`a₀≤137` (normal solar year) or `a₀≤126` (solar leap year), but is moved to an
+adjacent year if that year already has a leap month. These rules determine the lunar
+date under Songkran, not the statutory holiday duration.
+
+### 3.5 Era arithmetic cheat-sheet
 
 ```
 CS  = AD − 638        after the computed New Year day following atat
@@ -203,3 +271,11 @@ AD year begins ≈ 3.5 months BEFORE the CS year of that number
 4. Sao Saimong Mangrai, "Cula Sakaraja and the Sixty Cyclical Year Names", JSS 69 (1981) — era-succession chronicles; https://thesiamsociety.org/wp-content/uploads/1981/03/JSS_069_0d_SaoSaimong_CulaSakarajaAndSixtyCyclicalYearNames.pdf
 5. *Burmese calendar*, Wikipedia — era table, regional month-numbering, Thai/Burmese leap-type contrast.
 6. Burgess (trans.), *Sūrya Siddhānta*, ch. I vv. 34–37 — sunrise-to-sunrise civil day; see README ref [7].
+7. Thailand Ministry of Culture, Palace Brahmin/Royal Ceremonies, *Songkran
+   Announcement BE 2569 / CS 1388* — 2026 Mahā Songkran and Thaloeng Sok times;
+   https://www.culture.go.th/culture_th/ewt_news.php?filename=index&nid=9131
+8. Lao News Agency, 2026 reports for Sangkhan Luang and Sangkhan Khuen;
+   https://kpl.gov.la/En/detail.aspx/detail.aspx?id=97790 and
+   https://kpl.gov.la/EN/detail.aspx?id=97812
+9. Agence Kampuchea Presse, 2026 Khmer New Year arrival and three-day sequence;
+   https://www.akp.gov.kh/fr/post/detail/367426

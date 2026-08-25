@@ -8,6 +8,8 @@ Surya Siddhanta, epoch 22 March 638 CE:
     regimes, exception tables, year start ja, Thingyan akya/atat,
     watat/big-watat determination, and full moon of Second Waso
   * bidirectional conversion between integer JDN and Myanmar calendar dates
+  * trans-border Tai lunar New Year: Tai month 1 waxing 1, corresponding to
+    conventional Myanmar Nadaw waxing 1
   * Thai-line avoman/kammacabala integers (La Loubere -> Faraut -> Eade)
 
 All anchors reproduced in --test are taken from the published sources listed
@@ -272,10 +274,34 @@ def myanmar_to_jdn(my: int, month: int, month_day: int) -> int:
     return day_count + late * year_length + info["tagu_1"] - 1
 
 
+def tai_lunar_new_year_jdn(gregorian_year: int) -> int:
+    """Return Tai month 1 waxing 1 via its Myanmar Nadaw correspondence.
+
+    This is the Tai/Shan lunar year boundary used here, not an Ahom Lakni
+    boundary and not Myanmar Thingyan New Year.
+    """
+    return myanmar_to_jdn(gregorian_year - 638, 9, 1)
+
+
+def tai_lunar_new_year(gregorian_year: int) -> dict:
+    """Describe the Tai lunar New Year falling in a Gregorian year."""
+    jdn = tai_lunar_new_year_jdn(gregorian_year)
+    return {
+        "jdn": jdn,
+        "gregorian_date": jdn_to_gregorian(jdn),
+        "tai_month": 1,
+        "tai_phase": "waxing",
+        "tai_fortnight_day": 1,
+        "myanmar_month": 9,
+        "myanmar_month_name": "Nadaw",
+        "boundary": "Tai month 1 waxing 1 = Myanmar Nadaw waxing 1",
+    }
+
+
 def thai_new_year_integers(cs: int) -> dict:
     q, r = divmod(cs * 292207 + 373, 800)
     h0 = q + 1
-    a0 = (h0 * 11 + 650) % 692
+    a0 = (h0 * 11 + 650) % 692 or 692
     kammacabala = 800 - r
     return {"ahargana": h0, "remainder_r": r, "kammacabala": kammacabala,
             "solar_leap": kammacabala <= 207, "avoman": a0}

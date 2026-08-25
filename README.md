@@ -11,8 +11,8 @@ them as one universal calendar.
 
 | Component | Community/tradition | What the program calculates |
 |---|---|---|
-| `lak_ni.py` | Tai Ahom | Historical 60-year Lakni name; reconstructed Dinching/Nadaw boundary; comparative day and zodiac names |
-| `lak_jeng.py` | Shan/Tai | Lak Jeng source worksheet; continuous day cycle; Shan year from conventional Nadaw waxing 1 |
+| `lak_ni.py` | Tai Ahom | Historical 60-year Lakni names; explicitly reconstructed Dinching lunar months and New Year; no Nadaw-derived boundary |
+| `lak_jeng.py` | Trans-border Tai/Shan | Lak Jeng worksheet; continuous day cycle; Tai New Year at month 1 waxing 1 |
 | `sakkaraj.py` | Myanmar and regional CS research | Thingyan, five historical watat regimes, exception years, Myanmar date conversion, Thai avoman integers |
 
 No external Python package is required.
@@ -30,10 +30,14 @@ Example corrected result:
 
 ```text
 Gregorian date : 2026-08-23
-Ahom Lakni     : 18/60 Rung Shiu  [began 2025-11-20]
+Ahom Lakni*    : 18/60 Rung Shiu
+Ahom month*    : reconstructed lunar month and day
 Ganzhi compare : Rai-Singa = fire horse
 Myanmar date   : ME 1388 Wagaung waxing 10
 ```
+
+The asterisk is important: the Ahom result is a transparent reconstruction, not a claim
+that the unpublished priestly calculation constants have been recovered.
 
 ## 1. Keep the year cycles separate
 
@@ -52,15 +56,115 @@ Children: Cheu Plao Ngi Mao Shi Shiu Shinga Mut San Rao Mit Keu
 60 Ka Keu
 ```
 
-`ahom_lakni_for_date()` anchors position 1 at 2008 and reconstructs Dinching by
-aligning it to conventional Nadaw waxing 1. This is a transparent computational model,
-not a claim that every historical locality observed the boundary on the same civil day.
+`ahom_lakni_for_cycle_year()` exposes the historical name table without deriving an
+Ahom date from Myanmar Nadaw. `ahom_calendar_for_date()` separately implements the
+published boundary statement—Lakni changes when Dinching begins on the civil day after
+the new moon ending month 12—through this explicit reconstruction:
 
-### Shan/Tai year
+1. Dinching starts on the day after the first Assam-local new moon on or after 1 November.
+2. The Lakni name and month both change at local midnight on that following civil day.
+3. Successive local new moons start the remaining lunar months.
+4. If thirteen lunations occur before the next Dinching, the reconstructed leap lunation
+   is placed after month 8, following the comparative rule reported for the related Shan
+   system.
 
-The Shan year turns at conventional Nadaw waxing 1, the first day of the first Shan
-lunar month. It is calculated from the complete Myanmar month engine instead of choosing
-the last astronomical new moon in a November-December window.
+The seasonal anchor, leap placement, and astronomical new-moon calculation remain
+model assumptions because the complete historical Ahom priestly constants are not yet
+available in a published, verifiable edition.
+
+See [`LAKNI_NEW_YEAR_SOURCES.md`](LAKNI_NEW_YEAR_SOURCES.md) for the evidence hierarchy,
+exact pages, institutional links, manuscript catalogue records, and the required wording
+for citing a generated reconstructed date.
+
+#### The twelve Ahom months
+
+The published sequence is:
+
+| Number | Ahom month | Approximate Assamese correspondence |
+|---:|---|---|
+| 1 | Din Ching / Dinching | Aghon |
+| 2 | Din Kam | Puh / Poush |
+| 3 | Din Sham | Magh |
+| 4 | Din Shi | Falgun |
+| 5 | Din Ha | Chaitra |
+| 6 | Din Ruk | Baisakh |
+| 7 | Din Chit | Jeth / Jaistha |
+| 8 | Din Pet | Ahar |
+| 9 | Din Kao | Sawon |
+| 10 | Din Ship | Bhadra |
+| 11 | Din Shipit | Ahin / Ashwin |
+| 12 | Din Shipshang | Kartik |
+
+The correspondences are seasonal comparisons, not equations with the Assamese month
+boundaries. The sequence is published in Kapoor 2021, Appendix, p. 686, following
+Terwiel's study of Tai time-reckoning. See the direct links in
+[`LAKNI_NEW_YEAR_SOURCES.md`](LAKNI_NEW_YEAR_SOURCES.md).
+
+#### Why Shan says month 9 while Ahom says month 10
+
+On 23 August 2026 the calendars use three different ordinal systems:
+
+| Calendar | Date label |
+|---|---|
+| Reconstructed Ahom | Din Ship, month 10, day 11 |
+| Shan | Lön Kao, month 9 |
+| Myanmar | Wagaung waxing 10, Myanmar month 5 |
+
+Myanmar Era 1388 is a big `watat` year. It contains the additional First Waso.
+Numbering the lunations from the Shan New Year therefore gives:
+
+```text
+1   Nadaw / Lön Seng
+2   Pyatho
+3   Tabodwe
+4   Tabaung
+5   Tagu
+6   Kason
+7   Nayon
+8a  First Waso — extra month
+8b  Waso
+9   Wagaung / Lön Kao
+```
+
+The historical [*Gazetteer of Upper Burma and the Shan
+States*](https://myanmar-law-library.org/IMG/pdf/shan_state_part_i_volume_ii.pdf)
+identifies Lön Seng as Shan month 1 corresponding to Nadaw, and Lön Kao as Shan
+month 9 corresponding to Wagaung. In the national Myanmar sequence, however, Wagaung
+is month 5; “Shan month 9” and “Myanmar month 9” do not mean the same month.
+
+The current Ahom reconstruction did not insert a leap month in its 2025-26 Lakni year:
+
+```text
+1   Din Ching       21 Nov 2025
+2   Din Kam         21 Dec 2025
+3   Din Sham        20 Jan 2026
+4   Din Shi         18 Feb 2026
+5   Din Ha          20 Mar 2026
+6   Din Ruk         18 Apr 2026
+7   Din Chit        18 May 2026
+8   Din Pet         16 Jun 2026
+9   Din Kao         15 Jul 2026
+10  Din Ship        13 Aug 2026
+11  Din Shipit      12 Sep 2026
+12  Din Shipshang   11 Oct 2026
+```
+
+Consequently, the August lunation is Ahom month 10 but Shan month 9. They refer to
+approximately the same lunar period, but the Shan ordinal is one behind after its
+repeated eighth month. This comparison does **not** prove the historical Ahom leap-month
+placement: the Ahom dates above are generated by the explicitly reconstructed model,
+and an edited Ahom intercalation table could change the result.
+
+### Contemporary Tai/Shan lunar year
+
+The Tai year turns on waxing day 1 of Tai month 1. In the Myanmar calendar this
+corresponds to Nadaw waxing 1. `sakkaraj.tai_lunar_new_year()` calculates the
+correspondence with the complete Myanmar month engine instead of choosing the last
+astronomical new moon in a November-December window.
+
+This describes the trans-border Tai lunar tradition used by Shan/Tai Yai and related
+communities in Myanmar, Yunnan, and northern Thailand. It is not a claim about the
+official national New Year rule of Myanmar, China, or Thailand.
 
 ```text
 Tai year 2120 began 2025-11-20
@@ -104,6 +208,10 @@ gives `A=772521`, a ten-day disagreement. Both are preserved as separate evidenc
 the epoch offsets can be derived from stronger sources.
 
 ## 4. Myanmar/Sakkaraj machinery
+
+For the focused answer to whether Songkran and Thingyan use the same Sakkaraj calendar,
+see [`SONGKRAN_THINGYAN.md`](SONGKRAN_THINGYAN.md). They share an era family and an
+Aries-ingress New Year idea, but not one interchangeable regional calendar algorithm.
 
 The engine follows Yan Naing Aye's published `mmcal` method and includes:
 
@@ -169,8 +277,10 @@ difference.
 
 1. R. C. Kapoor, "Fixing the Chronology in Tai-Ahom Chronicles by Using Astronomical
    References," *Journal of Astronomical History and Heritage* 24(3), 2021, pp. 665-687.
-   Tables 7-9 and the November boundary support the corrected Ahom cycle.
+   Page 668 supports the Dinching/New Moon boundary; pp. 686-687 and Tables 7-9 support
+   the month order and 60 Lakni names. Institutional record and full paper:
    https://prints.iiap.res.in/handle/2248/7856
+   https://prints.iiap.res.in/bitstream/handle/2248/7856/Fixing%20the%20chronology%20in%20tai-ahom%20chronicles%20by%20using%20astronomical%20references.pdf?sequence=1
 2. Yan Naing Aye, "Algorithm, Program and Calculation of Myanmar Calendar," and the
    MIT-licensed `mmcal` reference implementation. https://github.com/yan9a/mmcal
 3. B. J. Terwiel and Ranoo Wichasin, [*Tai Ahoms and the Stars*](https://www.cornellpress.cornell.edu/book/9780877277095/tai-ahoms-and-the-stars/),
@@ -181,6 +291,12 @@ difference.
    2nd ed., Willmann-Bell, 1998, chapter 49, ISBN 0-943396-61-1.
 6. Ebenezer Burgess (trans.), [*Translation of the Surya-Siddhanta*](https://commons.wikimedia.org/wiki/File%3ATRANSLATION_OF_THE_SURYA-SIDDHANTA_%28IA_dli.bengal.10689.17955%29.pdf),
    American Oriental Society, 1860, chapter I (public-domain scan).
+7. Golap Chandra Barua (ed. and trans.), *Ahom-Buranji*, Assam Administration,
+   1930, p. 327, as cited and interpreted by Kapoor. Public NVLI scan:
+   https://ocrdigitalfile.nvli.in/cslrepository/4028/RB860-ocr.pdf
+8. British Library, EAP373/14/5, Ahom manuscript catalogue record; documents the
+   repeating 60-year ambiguity and one-to-two-year variation among conversions:
+   https://searcharchives.bl.uk/catalog/040-003345135
 
 ## Research status
 

@@ -1,22 +1,40 @@
 #!/usr/bin/env python3
-"""Comparative Tai Ahom Lakni calendar calculator.
+"""Comparative Tai Ahom Lakni calendar research tool.
 
-Converts Gregorian dates into the Tai Ahom Lak-Ni system:
-  * Historical Ahom Lakni cycle, anchored at Kap Cheu in November 1228 and
-    again in 2008, with the canonical Mother x Child table published by
-    Kapoor (2021, Tables 7-9)
+Provides a reference table for the historical Tai Ahom Lak-Ni cycle and
+comparative calculations:
+  * Historical Ahom Lakni names, anchored at Kap Cheu in 2008, with the
+    canonical Mother x Child table published by Kapoor (2021, Tables 7-9)
+  * An explicitly reconstructed Ahom lunar calendar: Dinching begins on the
+    civil day after the first Assam-local new moon on or after 1 November;
+    a thirteenth lunation is placed after month 8
   * Structural Tai year name (Mother x Son/animal, aligned to the pan-Tai
     cycle where 1984 CE = Kra/Karp Jai, the Wood-Rat year)
   * Sakkaraj (Chula Sakarat) era year with its computed solar New Year boundary
   * Weekday, 60-day Mother-Son day name, conventional Myanmar calendar date,
     and a separately labelled true-conjunction phase estimate. The latter is
-    astronomical evidence, not a traditional month conversion. Default
-    timezone UTC+6:30; use --tz 5.5 for an Assam moon estimate.
+    astronomical evidence, not a traditional month conversion. The default
+    timezone is UTC+5:30 for the Assam reconstruction.
 
 CAVEATS
-  * Exact Ahom month boundaries are reconstructed here by aligning Dinching
-    with conventional Myanmar/Shan Nadaw. Historical communities may differ
-    by a civil day or by regional intercalation practice.
+  * This module does not derive an Ahom Lakni date from Myanmar Nadaw. Tai
+    month 1 waxing 1 belongs to the separate contemporary Tai/Shan converter
+    in lak_jeng.py.
+  * Published sources establish that the Lakni changes with Dinching, on the
+    day following the new moon that ends month 12. They do not publish the
+    Ahom priests' complete new-moon and intercalation constants. The seasonal
+    anchor and leap-month placement used here are therefore labelled as a
+    reconstruction.
+
+SOURCE BASIS
+  * R. C. Kapoor, JAHH 24(3), 2021, p. 668: the new Lakni came with
+    Dinching, which begins on the day following the new moon ending month 12.
+  * Kapoor, pp. 686-687, Tables 7-9: Ahom month order and the canonical
+    10-Mother x 12-Child sequence.
+  * Jean Meeus, Astronomical Algorithms, 2nd ed., ch. 49: modern new-moon
+    approximation only, not the Ahom seasonal or intercalation rules.
+  * See ../LAKNI_NEW_YEAR_SOURCES.md for institutional links, manuscript
+    evidence, and a claim-by-claim confidence table.
   * ME_PI_60 is retained only as a legacy popular list and is not used for the
     default Ahom Lakni result.
   * DAY_ANCHOR_JDN is calibrated so index 0 = a jiazi (Kap-Jai) day, using
@@ -84,7 +102,17 @@ EPOCH_STEM_BRANCH = 4
 
 DAY_ANCHOR_JDN = 2433191
 
-DEFAULT_TZ_HOURS = 6.5
+DEFAULT_TZ_HOURS = 5.5
+DEFAULT_AHOM_TZ_HOURS = DEFAULT_TZ_HOURS
+
+AHOM_MONTHS = [
+    "Din Ching", "Din Kam", "Din Sham", "Din Shi", "Din Ha", "Din Ruk",
+    "Din Chit", "Din Pet", "Din Kao", "Din Ship", "Din Shipit", "Din Shipshang",
+]
+AHOM_BOUNDARY_MODEL = (
+    "reconstruction: Din Ching starts the day after the first Assam-local "
+    "new moon on or after 1 November; leap lunation after month 8"
+)
 
 ME_PI_60 = [
     "Mungkeu", "Plekteu", "Katplao", "Khutni", "Rungmau", "Tauchi",
@@ -120,27 +148,19 @@ def lak_ni_year(ad_year: int) -> dict:
     }
 
 
-def ahom_new_year_jdn(gregorian_year: int) -> int:
-    """Reconstruct Dinching waxing 1 from conventional Nadaw waxing 1."""
-    import sakkaraj as _sakkaraj
-    return _sakkaraj.myanmar_to_jdn(gregorian_year - 638, 9, 1)
-
-
-def ahom_lakni_for_date(y: int, m: int, d: int) -> dict:
-    import sakkaraj as _sakkaraj
-    jdn = to_jdn(y, m, d)
-    this_start = ahom_new_year_jdn(y)
-    cycle_year = y if jdn >= this_start else y - 1
-    start_jdn = this_start if cycle_year == y else ahom_new_year_jdn(y - 1)
+def ahom_lakni_for_cycle_year(cycle_year: int) -> dict:
+    """Return an Ahom cycle-table entry without assuming a month boundary."""
     pos = ((cycle_year - AHOM_CYCLE_ANCHOR_YEAR) % 60) + 1
     return {
         "position": pos,
         "name": AHOM_LAKNI_60[pos - 1],
         "cycle_year": cycle_year,
-        "start_jdn": start_jdn,
-        "start_date": _sakkaraj.jdn_to_gregorian(start_jdn),
-        "boundary_model": "Dinching aligned to conventional Nadaw waxing 1",
+        "boundary_model": None,
     }
+
+
+def jdn_to_date(jdn: int) -> datetime.date:
+    return datetime.date.fromordinal(jdn - 1721425)
 
 
 def tai_structural_year(ad_year: int) -> dict:
@@ -240,13 +260,83 @@ def lunar_phase(jdn: int, tz_hours: float = DEFAULT_TZ_HOURS) -> dict:
     return {"phase": phase, "day": num, "new_moon_jdn": nm_day}
 
 
+def ahom_dinching_start_jdn(gregorian_year: int,
+                             tz_hours: float = DEFAULT_AHOM_TZ_HOURS) -> int:
+    """Reconstruct Din Ching day 1 independently of the Myanmar calendar."""
+    november_1 = to_jdn(gregorian_year, 11, 1)
+    december_1 = to_jdn(gregorian_year, 12, 1)
+    for jdn in range(november_1, december_1):
+        if new_moon_day_before_or_on(jdn, tz_hours) == jdn:
+            return jdn + 1
+    raise RuntimeError(f"no reconstructed Din Ching new moon in {gregorian_year}")
+
+
+def ahom_month_starts(cycle_year: int,
+                      tz_hours: float = DEFAULT_AHOM_TZ_HOURS) -> list[int]:
+    """Return the 12 or 13 reconstructed lunar-month starts in a Lakni year."""
+    start = ahom_dinching_start_jdn(cycle_year, tz_hours)
+    end = ahom_dinching_start_jdn(cycle_year + 1, tz_hours)
+    starts = [start]
+    for jdn in range(start, end):
+        if new_moon_day_before_or_on(jdn, tz_hours) == jdn and jdn + 1 < end:
+            starts.append(jdn + 1)
+    if len(starts) not in (12, 13):
+        raise RuntimeError(
+            f"reconstructed Lakni year {cycle_year} has {len(starts)} lunar months")
+    return starts
+
+
+def ahom_calendar_for_date(y: int, m: int, d: int,
+                           tz_hours: float = DEFAULT_AHOM_TZ_HOURS) -> dict:
+    """Convert a Gregorian date using the explicitly reconstructed Ahom model.
+
+    Boundary priority: the Lakni and month both change at local midnight on
+    the civil day following the closing new moon of month 12.
+    """
+    jdn = to_jdn(y, m, d)
+    this_start = ahom_dinching_start_jdn(y, tz_hours)
+    cycle_year = y if jdn >= this_start else y - 1
+    year_start = ahom_dinching_start_jdn(cycle_year, tz_hours)
+    next_year_start = ahom_dinching_start_jdn(cycle_year + 1, tz_hours)
+    starts = ahom_month_starts(cycle_year, tz_hours)
+    month_index = max(i for i, start in enumerate(starts) if start <= jdn)
+    has_leap_month = len(starts) == 13
+    is_leap_month = has_leap_month and month_index == 8
+    if is_leap_month:
+        month_number = 8
+        month_name = "Leap after Din Pet"
+    else:
+        month_number = month_index + 1 - (1 if has_leap_month and month_index > 8 else 0)
+        month_name = AHOM_MONTHS[month_number - 1]
+    month_end = starts[month_index + 1] if month_index + 1 < len(starts) else next_year_start
+    lakni = ahom_lakni_for_cycle_year(cycle_year)
+    offset = datetime.timezone(datetime.timedelta(hours=tz_hours))
+    change_local = datetime.datetime.combine(jdn_to_date(year_start), datetime.time(), offset)
+    return {
+        **lakni,
+        "year_start_jdn": year_start,
+        "year_start_date": jdn_to_date(year_start),
+        "preceding_new_moon_date": jdn_to_date(year_start - 1),
+        "next_year_start_date": jdn_to_date(next_year_start),
+        "new_year_change_local": change_local,
+        "boundary_priority": "change Lakni and start Din Ching day 1 together",
+        "month_number": month_number,
+        "month_name": month_name,
+        "month_day": jdn - starts[month_index] + 1,
+        "month_length": month_end - starts[month_index],
+        "is_leap_month": is_leap_month,
+        "months_in_year": len(starts),
+        "boundary_model": AHOM_BOUNDARY_MODEL,
+    }
+
+
 def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS,
                 rule: str = DEFAULT_BOUNDARY) -> str:
     import sakkaraj as _sakkaraj
     jdn = to_jdn(y, m, d)
     dt = datetime.date(y, m, d)
+    ahom = ahom_calendar_for_date(y, m, d)
     ty = tai_year_for(y, m, d, rule)
-    ahom = ahom_lakni_for_date(y, m, d)
     st = tai_structural_year(ty)
     dy = day_sexagenary(jdn)
     ld = lunar_phase(jdn, tz_hours)
@@ -258,7 +348,8 @@ def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS,
                  "benchasok", "chosok", "sappasok", "atthasok", "noppasok"]
     lines = [
         f"Gregorian date : {dt.isoformat()} ({WEEKDAYS[(dt.weekday() + 1) % 7]})",
-        f"Ahom Lakni     : {ahom['position']}/60 {ahom['name']}  [began {ahom['start_date']}; reconstructed Dinching boundary]",
+        f"Ahom Lakni*    : {ahom['position']}/60 {ahom['name']}  [changed {ahom['new_year_change_local'].isoformat()}; after new moon {ahom['preceding_new_moon_date']}]",
+        f"Ahom month*    : {ahom['month_number']} {ahom['month_name']} day {ahom['month_day']}/{ahom['month_length']}  [{ahom['months_in_year']} lunar months]",
         f"Ganzhi compare : {st['name']} = {st['element']} {st['son'].split('(')[1][:-1]}  [civil year {ty}, boundary {rule}]",
         f"Shan spelling  : {st['shan_stem']}-{st['son'].split('/')[0].split()[0]}",
         f"Sakkaraj era   : {cs} CS (sok {sok_digit} = {sok_names[sok_digit]})",
@@ -267,6 +358,7 @@ def full_report(y: int, m: int, d: int, tz_hours: float = DEFAULT_TZ_HOURS,
         f"Myanmar date   : ME {md['my']} {md['month_name']} {md['phase']} {md['fortnight_day']}",
         f"Moon estimate  : {phase_txt}  [true-conjunction estimate, UTC+{tz_hours:g}]",
         f"Julian Day No. : {jdn}",
+        "* Ahom lunar date is an explicit seasonal/new-moon reconstruction; not a Nadaw conversion.",
     ]
     return "\n".join(lines)
 
@@ -276,9 +368,15 @@ def self_test() -> None:
     assert AHOM_LAKNI_60[0] == "Kap Cheu"
     assert AHOM_LAKNI_60[17] == "Rung Shiu"
     assert AHOM_LAKNI_60[59] == "Ka Keu"
-    ahom26 = ahom_lakni_for_date(2026, 8, 23)
-    assert (ahom26["position"], ahom26["name"]) == (18, "Rung Shiu")
-    assert ahom26["start_date"] == datetime.date(2025, 11, 20)
+    assert ahom_lakni_for_cycle_year(2008)["name"] == "Kap Cheu"
+    assert ahom_lakni_for_cycle_year(2025)["name"] == "Rung Shiu"
+    assert jdn_to_date(ahom_dinching_start_jdn(2025)) == datetime.date(2025, 11, 21)
+    before = ahom_calendar_for_date(2025, 11, 20)
+    after = ahom_calendar_for_date(2025, 11, 21)
+    assert (before["cycle_year"], after["cycle_year"]) == (2024, 2025)
+    assert (after["name"], after["month_name"], after["month_day"]) == (
+        "Rung Shiu", "Din Ching", 1)
+    assert ahom_calendar_for_date(2024, 11, 2)["months_in_year"] == 13
     assert len(ME_PI_60) == 60
     assert lak_ni_year(1193)["me_pi_popular"] == "Mungkeu"
     assert lak_ni_year(1215)["me_pi_popular"] == "Katrau"
@@ -312,7 +410,7 @@ def self_test() -> None:
         "phase": "waxing", "day": 1, "new_moon_jdn": to_jdn(2021, 12, 4)}
     assert lunar_phase(to_jdn(2021, 12, 4))["phase"].startswith("new moon")
     assert lunar_phase(to_jdn(2026, 8, 23)) == {
-        "phase": "waxing", "day": 10, "new_moon_jdn": to_jdn(2026, 8, 13)}
+        "phase": "waxing", "day": 11, "new_moon_jdn": to_jdn(2026, 8, 12)}
     assert lunar_phase(to_jdn(2026, 8, 23), tz_hours=5.5) == {
         "phase": "waxing", "day": 11, "new_moon_jdn": to_jdn(2026, 8, 12)}
     print("all self-tests passed")
@@ -323,9 +421,9 @@ def main(argv=None) -> int:
     p.add_argument("date", nargs="*", help="YYYY MM DD (defaults to today)")
     p.add_argument("--test", action="store_true", help="run self-tests")
     p.add_argument("--tz", type=float, default=DEFAULT_TZ_HOURS,
-                   help="timezone offset hours for lunar phase (default 6.5 Myanmar; 5.5 Assam)")
+                   help="timezone offset hours for lunar phase (default 5.5 Assam)")
     p.add_argument("--boundary", choices=sorted(YEAR_BOUNDS), default=DEFAULT_BOUNDARY,
-                   help="boundary for the comparative ganzhi year only; Ahom Lakni always uses Dinching")
+                   help="boundary for the comparative ganzhi year only")
     p.add_argument("--calibrate", nargs=2, metavar=("DATE", "ANIMAL"),
                    help="print candidate DAY_ANCHOR_JDN for a known day-animal")
     args = p.parse_args(argv)
